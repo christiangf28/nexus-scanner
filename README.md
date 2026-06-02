@@ -43,7 +43,7 @@ Single-file HTML application — all CSS and JavaScript are bundled in one `lol-
 
 ### Disclaimer
 
-Nexus Scanner is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
+Nexus Scanner was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.
 
 ---
 
@@ -81,4 +81,4 @@ Aplicación HTML de un solo archivo — todo el CSS y JavaScript están en `lol-
 
 ### Aviso legal
 
-Nexus Scanner no está respaldado por Riot Games y no refleja las opiniones de Riot Games ni de ninguna persona involucrada oficialmente en la producción o gestión de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas registradas de Riot Games, Inc.
+Nexus Scanner fue creado bajo la política "Legal Jibber Jabber" de Riot Games usando activos de su propiedad. Riot Games no respalda ni patrocina este proyecto.

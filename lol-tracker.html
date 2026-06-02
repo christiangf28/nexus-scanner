@@ -1326,14 +1326,13 @@ function _roleEs(r){return{TOP:'Top',JUNGLE:'Jungla',MID:'Mid',BOT:'ADC',SUPPORT
 // Umbrales calibrados a Diamond LAS
 // Umbrales por minuto de partida (÷30 min promedio Diamond LAS). Vision, dmg, dtaken, cc → per-minute.
 const TIER_MULT={IRON:.68,BRONZE:.75,SILVER:.82,GOLD:.89,PLATINUM:.94,EMERALD:.97,DIAMOND:1,MASTER:1.05,GRANDMASTER:1.09,CHALLENGER:1.14};
-// Pesos para comparación absoluta entre elos — derivados de TIER_DIST usando sqrt(ln(1/p+1)) normalizado a Emerald=1.0
+// Pesos para comparación absoluta entre elos — normalizados a Emerald=1.0
 const ELO_ABS_MULT={IRON:.57,BRONZE:.60,SILVER:.63,GOLD:.72,PLATINUM:.84,EMERALD:1.00,DIAMOND:1.21,MASTER:1.57,GRANDMASTER:1.79,CHALLENGER:2.06};
 const TIER_LABELS=['IRON','BRONZE','SILVER','GOLD','PLATINUM','EMERALD','DIAMOND','MASTER'];
 function getTierMult(tier){return TIER_MULT[(tier||'DIAMOND').toUpperCase()]||1;}
 function scaleTh(th,m){const o={};for(const k in th){const v=th[k];if(v&&typeof v==='object'&&'g' in v){o[k]={g:+(v.g*m).toFixed(2),ok:+(v.ok*m).toFixed(2)};}else if(k==='deaths'&&typeof v==='object'&&m&&m!==1){o[k]={ok:+(v.ok/m).toFixed(1),bad:+(v.bad/m).toFixed(1)};}else{o[k]=v;}}return o;}
 const _TIER_ABR={IRON:'Hie',BRONZE:'Bro',SILVER:'Pla',GOLD:'Oro',PLATINUM:'Plat',EMERALD:'Esm',DIAMOND:'Dia',MASTER:'Mae'};
 function tierBreakdown(baseG,baseOk,unit=''){return TIER_LABELS.map(t=>`${_TIER_ABR[t]||t.slice(0,3)}: ≥${+(baseOk*TIER_MULT[t]).toFixed(1)}${unit}`).join(' · ');}
-const SERVER_POP={LAS:380000,LAN:520000,NA:700000,BR:800000,EUW:1800000,EUNE:900000,KR:1500000,JP:180000,OCE:100000,TR:300000};
 function getTierCol(tier){
   const isLight=document.documentElement.getAttribute('data-theme')==='light';
   const d={IRON:'#888',BRONZE:'#c26b3a',SILVER:'#a8c0c8',GOLD:'#ffd447',PLATINUM:'#3cb490',EMERALD:'#1fa86b',DIAMOND:'#6dc5e6',MASTER:'#c84cf0',GRANDMASTER:'#e84057',CHALLENGER:'#f5c518'};
@@ -1341,32 +1340,6 @@ function getTierCol(tier){
   return(isLight?l:d)[tier]||'#888';
 }
 function tierEs(t){return{IRON:'Hierro',BRONZE:'Bronce',SILVER:'Plata',GOLD:'Oro',PLATINUM:'Platino',EMERALD:'Esmeralda',DIAMOND:'Diamante',MASTER:'Maestro',GRANDMASTER:'Gran Maestro',CHALLENGER:'Retador'}[t]||t;}
-const TIER_DIST={IRON:.03,BRONZE:.13,SILVER:.22,GOLD:.25,PLATINUM:.18,EMERALD:.12,DIAMOND:.04,MASTER:.004,GRANDMASTER:.0008,CHALLENGER:.0002};
-function estimateLadderRank(tier,division,lp,region){
-  const _ro=['IRON','BRONZE','SILVER','GOLD','PLATINUM','EMERALD','DIAMOND','MASTER','GRANDMASTER','CHALLENGER'];
-  const _do=['IV','III','II','I'];
-  const _apex=['MASTER','GRANDMASTER','CHALLENGER'];
-  const total=SERVER_POP[region]||380000;
-  if(!tier)return null;
-  const T=tier.toUpperCase();
-  const tierIdx=_ro.indexOf(T);
-  if(tierIdx===-1)return null;
-  let above=0;
-  for(let t=tierIdx+1;t<_ro.length;t++)above+=Math.round(total*(TIER_DIST[_ro[t]]||0));
-  if(_apex.includes(T)){
-    const tierTotal=Math.round(total*(TIER_DIST[T]||0));
-    above+=Math.round(tierTotal*Math.max(0,1-Math.min(lp||0,500)/500));
-  }else{
-    const tierTotal=Math.round(total*(TIER_DIST[T]||0));
-    const divSize=Math.round(tierTotal/4);
-    const divIdx=_do.indexOf(division);
-    for(let d=(divIdx===-1?0:divIdx)+1;d<4;d++)above+=divSize;
-    above+=Math.round(divSize*(1-(lp||0)/100));
-  }
-  const rank=Math.max(1,above+1);
-  const pct=rank/total*100;
-  return{rank,total,pct:pct<0.1?'<0.1':pct.toFixed(1)};
-}
 const ROLE_TH={
   TOP:     {kda:{g:4.5,ok:3.0},cs:{g:9.0,ok:7.5},vision:{g:1.17,ok:0.73},dmg:{g:1000,ok:667},gold:{g:500,ok:400},kp:{g:60,ok:45},deaths:{ok:3,bad:5}},
   JUNGLE:  {kda:{g:4.8,ok:3.2},cs:{g:7.0,ok:5.5},vision:{g:1.83,ok:1.17},dmg:{g:833,ok:500},gold:{g:480,ok:370},kp:{g:68,ok:52},deaths:{ok:3,bad:5}},
@@ -1963,29 +1936,17 @@ function scoreToGrade(n){
   if(n>=30)return{g:'D', c:'var(--red)'};
   return       {g:'F', c:'var(--red)'};
 }
-function nextDiv(tier,rank){
-  const tiers=['IRON','BRONZE','SILVER','GOLD','PLATINUM','EMERALD','DIAMOND'];
-  const divs=['IV','III','II','I'];
-  if(!tier||!rank)return null;
-  const t=tier.toUpperCase(),r=rank.toUpperCase();
-  if(['MASTER','GRANDMASTER','CHALLENGER'].includes(t))return null;
-  if(t==='DIAMOND'&&r==='I')return'Master';
-  const cap=s=>s.charAt(0)+s.slice(1).toLowerCase();
-  if(r==='I'){const ti=tiers.indexOf(t);if(ti<0||ti>=tiers.length-1)return null;return cap(tiers[ti+1])+' IV';}
-  const di=divs.indexOf(r);if(di<0||di>=divs.length-1)return null;
-  return cap(t)+' '+divs[di+1];
-}
-function predictRank(sc,wr,games,tier=null,rank=null){
+function predictRank(sc,wr,games){
   if(games<5)return null;
   const strong=sc>=68&&wr>=55;
   const good=sc>=58&&wr>=52;
   const bad=sc<42||wr<44;
   const mediocre=sc<50||wr<48;
-  if(strong){const next=nextDiv(tier,rank);return{icon:'🚀',label:next?`Road to ${next}`:'En órbita',col:'var(--green)',tip:'Tu rendimiento supera el promedio de tu elo — muy probablemente ganes LP netos.'};}
+  if(strong)return{icon:'🚀',label:'Tendencia positiva',col:'var(--green)',tip:'Rendimiento y WR por encima del promedio — buena racha de juego.'};
   if(good)return{icon:'📈',label:'Bien encaminado',col:'var(--cyan)',tip:'Rendimiento sobre promedio — vas en la dirección correcta.'};
-  if(bad)return{icon:'💀',label:'Descenso a la locura',col:'var(--red)',tip:'Tu rendimiento está por debajo del promedio del elo. Sin cambios, bajarás de rango.'};
-  if(mediocre)return{icon:'😐',label:'Atrapado en el limbo',col:'var(--gold)',tip:'Rendimiento promedio — no subes ni bajas significativamente.'};
-  return{icon:'→',label:"Ni pa' arriba ni pa' abajo",col:'var(--text2)',tip:'Rendimiento dentro del promedio del elo.'};
+  if(bad)return{icon:'⚠️',label:'Tendencia a mejorar',col:'var(--red)',tip:'Rendimiento y WR por debajo del promedio — hay aspectos concretos por trabajar.'};
+  if(mediocre)return{icon:'😐',label:'Rendimiento estable',col:'var(--gold)',tip:'Rendimiento dentro del promedio — pequeñas mejoras en las dimensiones más bajas marcan la diferencia.'};
+  return{icon:'→',label:"Rendimiento promedio",col:'var(--text2)',tip:'Rendimiento dentro del promedio del elo.'};
 }
 function computeAdaptiveScore(matches,tier=null,tierFn=null){
   if(!matches||!matches.length)return 50;
@@ -2474,7 +2435,7 @@ function buildCard(p,idx){
     const roleSummary=rolesInSolo.slice(0,2).map(([r,c])=>`${r}(${c})`).join(' · ');
     const perc=scoreToPercentile(sc);
     const percColor=perc.dir==='top'?'var(--green)':perc.dir==='bot'?'var(--red)':'var(--gold)';
-    const pred=s?predictRank(sc,s.wr,sqM20.length,sqTier,sqRank):null;
+    const pred=s?predictRank(sc,s.wr,sqM20.length):null;
     const sparkSvg=(()=>{try{const hist=JSON.parse(localStorage.getItem('loltrack_history')||'[]');const pts=hist.filter(h=>h.scores[p.puuid]!==undefined).slice(-10).map(h=>h.scores[p.puuid]);if(pts.length<2)return'';const W=70,H=20,mn=Math.max(0,Math.min(...pts)-5),mx=Math.min(100,Math.max(...pts)+5),rng=mx-mn||1;const poly=pts.map((v,i)=>`${((i/(pts.length-1))*W).toFixed(1)},${(H-((v-mn)/rng)*H).toFixed(1)}`).join(' ');return`<svg width="${W}" height="${H}" style="margin-top:4px;display:block"><polyline points="${poly}" fill="none" stroke="${scoreColor(pts[pts.length-1])}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/></svg>`;}catch(e){return'';}})();
     // Grade
     const _gradeData=scoreToGrade(sc);
@@ -2606,8 +2567,6 @@ function buildCard(p,idx){
     const wr=tot>0?Math.round(w/tot*100):0;
     const isPeak=label==='SOLO/DUO'&&peak&&rankValue(peak.tier,peak.rank)>rankValue(q.tier,q.rank);
     const peakStr=isPeak?`<span style="font-size:11px;color:var(--gold);font-family:'Share Tech Mono',monospace;margin-top:2px;display:inline-block" title="Pico histórico registrado">🏆 ${tierEs(peak.tier)} ${peak.rank||''}</span>`:'';
-    const _ldr=estimateLadderRank(tier,q.rank,q.leaguePoints,_regionKey);
-    const ldrHtml=_ldr?`<div style="font-size:11px;color:var(--cyan);font-family:'Share Tech Mono',monospace;margin-top:3px;opacity:.8" title="Estimación basada en distribución de jugadores de ${_regionKey}">~#${_ldr.rank.toLocaleString('es')} ${_regionKey} · Top ${_ldr.pct}%</div>`:'';
     return`<div class="rank-row" style="padding:10px 16px;">
       <div style="font-size:11px;color:var(--text3);font-family:'Orbitron',monospace;letter-spacing:1px;min-width:76px">${label}</div>
       <div style="flex:1;min-width:0;margin-right:10px">
@@ -2615,7 +2574,6 @@ function buildCard(p,idx){
           <div class="rank-tier" style="color:${getTierCol(tier)}">${tierStr}</div>
         </div>${peakStr}
         <div class="rank-lp">${q.leaguePoints} LP</div>
-        ${ldrHtml}
       </div>
       <div class="wr-section">
         <div class="wr-pct">${wr}% WR</div>
@@ -4556,6 +4514,11 @@ async function addAllyFromMatch(gameName, tagLine, btn){
     </div>
   </div>
 </div>
+
+<footer style="text-align:center;padding:20px 24px;font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace;border-top:1px solid var(--border);margin-top:32px;line-height:1.8">
+  Nexus Scanner was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.<br>
+  Nexus Scanner no está patrocinado ni respaldado por Riot Games y no refleja las opiniones de Riot Games ni de ninguna persona involucrada oficialmente en la producción o gestión de sus propiedades. Riot Games y todas sus propiedades asociadas son marcas comerciales o marcas registradas de Riot Games, Inc.
+</footer>
 
 </body>
 </html>
