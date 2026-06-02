@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexus Scan</title>
+<meta name="description" content="Nexus Scanner — Herramienta de análisis de rendimiento personal para League of Legends. Visualiza tus stats por rol, sigue tu progreso y mejora tu juego.">
+<meta property="og:title" content="Nexus Scanner">
+<meta property="og:description" content="Personal performance analysis tool for League of Legends — track your stats, analyze your gameplay, and improve.">
+<meta property="og:type" content="website">
+<title>Nexus Scanner</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -73,7 +77,7 @@
 [data-theme="light"] .guide-card{background:rgba(185,215,245,.95);}
 [data-theme="light"] .hero-stat{background:var(--bg);}
 [data-theme="light"] .sug{background:rgba(185,215,245,.95);}
-[data-theme="light"] .note-sec,[data-theme="light"] .apanel{background:var(--bg);}
+[data-theme="light"] .apanel{background:var(--bg);}
 [data-theme="light"] .logo>img{filter:invert(1) hue-rotate(180deg);}
 [data-theme="light"] #regionSelect{background:#d8eaf8 !important;color:var(--cyan) !important;border-color:var(--border2) !important;}
 [data-theme="light"] .adv-tab.active{background:var(--bg2);border-bottom-color:var(--bg2);}
@@ -590,7 +594,7 @@ select:focus{border-color:var(--cyan);}
 }
 .tabs::-webkit-scrollbar{display:none;}
 .tab{
-  flex:0 0 auto;
+  flex:1;
   padding:12px 14px;
   font-size:14px;font-weight:700;
   text-align:center;cursor:pointer;
@@ -741,26 +745,6 @@ select:focus{border-color:var(--cyan);}
 .insight.warn{border-left-color:rgba(255,58,92,.5);}
 .insight span{color:var(--text);}
 
-/* Note section */
-.note-sec{padding:14px 16px;}
-.note-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
-.nl{font-size:13px;color:var(--text3);font-family:'Orbitron',monospace;letter-spacing:2px;text-transform:uppercase;}
-.stars{display:flex;gap:3px;}
-.star{
-  font-size:18px;cursor:pointer;
-  transition:transform .1s,text-shadow .15s;
-  user-select:none;line-height:1;
-  color:var(--text3);
-}
-.star.lit{color:var(--gold);text-shadow:0 0 8px rgba(255,212,71,.5);}
-.star:hover{transform:scale(1.25);}
-.note-display{
-  font-family:'Orbitron',monospace;
-  font-size:24px;font-weight:900;
-  color:var(--gold);
-  text-shadow:0 0 12px rgba(255,212,71,.4);
-  min-width:52px;
-}
 textarea{
   width:100%;
   background:rgba(17,24,39,.6);
@@ -1959,15 +1943,15 @@ function scoreToDisplay(n){
   return(v>=0?'+':'')+v.toFixed(2);
 }
 function scoreToPercentile(n){
-  if(n>=92)return{pct:'Top 2%',dir:'top'};
-  if(n>=84)return{pct:'Top 10%',dir:'top'};
-  if(n>=74)return{pct:'Top 20%',dir:'top'};
-  if(n>=63)return{pct:'Top 35%',dir:'top'};
+  if(n>=92)return{pct:'Rendimiento élite',dir:'top'};
+  if(n>=84)return{pct:'Muy destacado',dir:'top'};
+  if(n>=74)return{pct:'Por encima del promedio',dir:'top'};
+  if(n>=63)return{pct:'Sobre el promedio',dir:'top'};
   if(n>=50)return{pct:'Promedio',dir:'avg'};
-  if(n>=40)return{pct:'Peor 40%',dir:'bot'};
-  if(n>=30)return{pct:'Peor 25%',dir:'bot'};
-  if(n>=18)return{pct:'Peor 15%',dir:'bot'};
-  return{pct:'Peor 5%',dir:'bot'};
+  if(n>=40)return{pct:'Bajo el promedio',dir:'bot'};
+  if(n>=30)return{pct:'Por mejorar',dir:'bot'};
+  if(n>=18)return{pct:'Necesita atención',dir:'bot'};
+  return{pct:'Área de mejora',dir:'bot'};
 }
 function scoreToGrade(n){
   if(n>=92)return{g:'S+',c:'#ffd447'};
@@ -2038,13 +2022,13 @@ async function rFetch(url,_retry){
   const k=getKey();
   if(!k){showErr('API Key requerida.');return null;}
   const ticket=_rQueue.then(async()=>{
-    // 20/sec: mínimo 60ms entre requests
-    const gap=Math.max(0,_rLast+65-Date.now());
+    // 20/sec: mínimo 80ms entre requests (~12 req/s, margen real vs límite de 20)
+    const gap=Math.max(0,_rLast+80-Date.now());
     if(gap>0)await new Promise(r=>setTimeout(r,gap));
-    // 100/2min: frenar a 80 para tener margen
+    // 100/2min: frenar a 55 para tener margen amplio
     const now=Date.now(),cutoff=now-120000;
     while(_r2min.length&&_r2min[0]<cutoff)_r2min.shift();
-    if(_r2min.length>=70){
+    if(_r2min.length>=55){
       const hold=_r2min[0]+120000-Date.now()+500;
       if(hold>0)await new Promise(r=>setTimeout(r,hold));
       const c2=Date.now()-120000;while(_r2min.length&&_r2min[0]<c2)_r2min.shift();
@@ -2116,7 +2100,7 @@ async function fetchMatches(puuid,queue,count,start=0,onProg=null){
           item0:pp.item0||0,item1:pp.item1||0,item2:pp.item2||0,
           item3:pp.item3||0,item4:pp.item4||0,item5:pp.item5||0,item6:pp.item6||0,
         }));
-        pt._matchId=ids[i];pt._queueId=m.info.queueId||null;
+        pt._matchId=ids[i];pt._queueId=m.info.queueId||null;pt._gameMode=m.info.gameMode||null;
         result.push(pt);
       }}
       if(onProg)onProg(i+1,_total);
@@ -2143,8 +2127,16 @@ async function addPlayer(overrideName,overrideTag){
   let sk=null;
   const _compTbl=document.getElementById('compTable');
   function _skProg(txt){
-    if(sk){const ft=sk.lastElementChild;if(ft)ft.textContent=txt;}
-    else if(_isMulti&&_compTbl)_compTbl.innerHTML=`<div class="loading-ph" style="min-height:220px">${txt}</div>`;
+    if(sk){
+      const pctMatch=txt.match(/(\d+)%/);const pct=pctMatch?parseInt(pctMatch[1]):0;
+      const lblMatch=txt.match(/⏳\s*(?:Cargando\s+)?([A-Za-z]+)/);const lbl=lblMatch?lblMatch[1].toUpperCase():'—';
+      const ring=document.getElementById('sk-prog-ring');
+      const pctEl=document.getElementById('sk-prog-pct');
+      const lblEl=document.getElementById('sk-prog-lbl');
+      if(ring)ring.style.background=`conic-gradient(var(--cyan) ${pct}%, rgba(255,255,255,.08) 0%)`;
+      if(pctEl)pctEl.textContent=pct+'%';
+      if(lblEl)lblEl.textContent=lbl;
+    } else if(_isMulti&&_compTbl)_compTbl.innerHTML=`<div class="loading-ph" style="min-height:220px">${txt}</div>`;
   }
   if(_isMulti){
     skGrid.style.display='none';
@@ -2154,7 +2146,7 @@ async function addPlayer(overrideName,overrideTag){
     document.getElementById('emptyState').style.display='none';
     sk=document.createElement('div');
     sk.className='pcard';sk.id='sk-loading';
-    sk.innerHTML=`<div class="chead"><div class="avatar sk-blk" style="width:44px;height:44px;border-radius:50%"></div><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div class="sk-blk" style="height:13px;width:110px"></div><div class="sk-blk" style="height:10px;width:75px"></div></div></div><div style="padding:16px;display:flex;flex-direction:column;gap:10px"><div class="sk-blk" style="height:48px"></div><div class="sk-blk" style="height:28px"></div><div class="sk-blk" style="height:72px"></div><div class="sk-blk" style="height:28px"></div></div><div style="padding:10px 16px;text-align:center;font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace;border-top:1px solid var(--border)">⏳ Cargando datos...</div>`;
+    sk.innerHTML=`<div class="chead"><div class="avatar sk-blk" style="width:44px;height:44px;border-radius:50%"></div><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div class="sk-blk" style="height:13px;width:110px"></div><div class="sk-blk" style="height:10px;width:75px"></div></div></div><div style="padding:40px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:220px"><div id="sk-prog-ring" style="width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--cyan) 0%,rgba(255,255,255,.08) 0%);display:flex;align-items:center;justify-content:center;transition:background .25s"><div style="width:74px;height:74px;border-radius:50%;background:var(--bg1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span id="sk-prog-pct" style="font-family:'Share Tech Mono',monospace;font-size:19px;font-weight:700;color:var(--cyan);line-height:1">0%</span><span id="sk-prog-lbl" style="font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace;line-height:1">—</span></div></div></div>`;
     skGrid.appendChild(sk);
   }
   const acct=await rFetch(`https://${ACCT}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tag)}`);
@@ -2166,33 +2158,32 @@ async function addPlayer(overrideName,overrideTag){
   if(!summ){if(sk)sk.remove();else if(_isMulti&&_compTbl){_compTbl.innerHTML='';skGrid.style.display='';}renderAll();if(btn){btn.disabled=false;btn.textContent='+ AGREGAR';}return;}
   const count=getCount();
   const _wasLen=players.length;
+  const countCaos=50; // null-queue pool; mayoría son cache hits de Solo/Flex ya fetcheados
   const soloQ=Array.isArray(ranked)?ranked.find(r=>r.queueType==='RANKED_SOLO_5x5'):null;
   const flexQ=Array.isArray(ranked)?ranked.find(r=>r.queueType==='RANKED_FLEX_SR'):null;
   // Cargar todas las colas antes de mostrar la card
-  _skProg('⏳ Cargando Solo Q — 0%');
+  _skProg('⏳ Solo Q — 1%');
   const matchesSolo=await fetchMatches(acct.puuid,420,count,0,(ld,tot)=>{
-    _skProg(`⏳ Solo Q — ${Math.round(ld/tot*100)}%`);
+    _skProg(`⏳ Solo Q — ${1+Math.round(ld/tot*49)}%`);
   });
-  _skProg('⏳ Cargando Flex — 0%');
+  _skProg('⏳ Flex — 50%');
   const matchesFlex=await fetchMatches(acct.puuid,440,count,0,(ld,tot)=>{
-    _skProg(`⏳ Flex — ${Math.round(ld/tot*100)}%`);
+    _skProg(`⏳ Flex — ${50+Math.round(ld/tot*25)}%`);
   });
-  // ARAM + Caos: solo si es el primer jugador (en comparativa no aporta al score)
-  let matchesAram=[],matchesCaos=[];
-  if(_wasLen===0){
-    _skProg('⏳ Cargando ARAM — 0%');
-    matchesAram=await fetchMatches(acct.puuid,450,count,0,(ld,tot)=>{
-      _skProg(`⏳ ARAM — ${Math.round(ld/tot*100)}%`);
-    });
-    _skProg('⏳ Cargando CAOS — 0%');
-    const _rawCaos=await fetchMatches(acct.puuid,null,15,0,(ld,tot)=>{
-      _skProg(`⏳ CAOS — ${Math.round(ld/tot*100)}%`);
-    });
-    const _knownIds=new Set([...matchesSolo,...matchesFlex,...matchesAram].map(m=>m._matchId));
-    matchesCaos=_rawCaos.filter(m=>!_knownIds.has(m._matchId));
-  }
+  _skProg('⏳ ARAM — 75%');
+  const matchesAram=await fetchMatches(acct.puuid,450,10,0,(ld,tot)=>{
+    _skProg(`⏳ ARAM — ${75+Math.round(ld/tot*15)}%`);
+  });
+  _skProg('⏳ Caos — 90%');
+  const _rawPool=await fetchMatches(acct.puuid,null,countCaos,0,(ld,tot)=>{
+    _skProg(`⏳ Caos — ${90+Math.round(ld/tot*9)}%`);
+  });
+  const _knownIds=new Set([...matchesSolo,...matchesFlex,...matchesAram].map(m=>m._matchId));
+  const _poolNew=_rawPool.filter(m=>!_knownIds.has(m._matchId));
+  const matchesArena=_poolNew.filter(m=>m._gameMode==='CHERRY');
+  const matchesCaos=_poolNew.filter(m=>m._gameMode!=='CHERRY');
   // Todos los datos listos — agregar jugador y mostrar card
-  const _allM=[...new Map([...matchesSolo,...matchesFlex,...matchesAram,...matchesCaos].map(m=>[m._matchId,m])).values()];
+  const _allM=[...new Map([...matchesSolo,...matchesFlex,...matchesAram,...matchesArena,...matchesCaos].map(m=>[m._matchId,m])).values()];
   const _pTmp={matchesSolo,matchesFlex};
   const detRole=detectRolePrioritized(_pTmp);
   const detCT=detectCTFromMatches(matchesSolo.length?matchesSolo:matchesFlex);
@@ -2200,7 +2191,7 @@ async function addPlayer(overrideName,overrideTag){
     gameName:acct.gameName,tagLine:acct.tagLine,
     puuid:acct.puuid,summonerId:summ.id,
     level:summ.summonerLevel,profileIconId:summ.profileIconId,soloQ,flexQ,
-    matches:_allM,matchesSolo,matchesFlex,matchesAram,matchesCaos,matchesOther:[],
+    matches:_allM,matchesSolo,matchesFlex,matchesAram,matchesArena,matchesCaos,matchesOther:[],
     role:detRole,champType:detCT,
     note:0,comment:'',
     activeTab:_wasLen>0?'stats':'análisis',filterStat:'all',editOpen:false,
@@ -2440,8 +2431,8 @@ function buildCard(p,idx){
     const sqRank=_activeQ==='flex'?(p.flexQ?.rank||p.soloQ?.rank):p.soloQ?.rank;
     const sqLabel=_activeQ==='flex'?'Flex':'Solo';
     const sSolo=sqM20.length>=3?calcStats({matches:sqM20}):s;
-    const roleSolo=sqM20.length>=3?detectRole(sqM20):p.role;
-    const ctSolo=sqM20.length>=3?detectCTFromMatches(sqM20):p.champType;
+    const roleSolo=p.role||detectRole(sqM20);
+    const ctSolo=p.champType||detectCTFromMatches(sqM20);
     const sc=sqM20.length?computeAdaptiveScore(sqM20,sqTier):computeScore(sSolo,roleSolo,ctSolo,sqTier).total;
     // Dims per-match con tier (mismo método que tab Análisis — consistencia garantizada)
     const _sbDimsMap={};
@@ -2562,7 +2553,7 @@ function buildCard(p,idx){
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div class="stip-wrap"><div class="score-num" style="color:${_gradeData.c}"><span class="score-grade">${_gradeData.g}</span><span class="score-subnum">${Math.round(sc)}/100</span></div>${_stipHtml}</div>
           <div style="display:flex;flex-direction:column;gap:3px">
-            <span style="font-size:13px;font-family:'Orbitron',monospace;font-weight:700;color:${percColor}" title="Benchmark normalizado por rol y elo — no es un percentil real de distribución de jugadores, sino qué tan bien cumples las expectativas de tu rango">${perc.pct} en su elo</span>
+            <span style="font-size:13px;font-family:'Orbitron',monospace;font-weight:700;color:${percColor}" title="Benchmark normalizado por rol y elo — mide qué tan bien cumples las expectativas de tu rango en las dimensiones evaluadas">${perc.pct}</span>
             ${pred?`<span style="font-size:15px;color:${pred.col};font-family:'Share Tech Mono',monospace" title="${pred.tip}">${pred.icon} ${pred.label}</span>`:''}
           </div>
         </div>
@@ -2640,7 +2631,7 @@ function buildCard(p,idx){
   const typeOpts=['Tank','Bruiser','Assassin','Mage','Marksman','Support','Unknown'].map(t=>`<option value="${t}"${p.champType===t?' selected':''}>${t}</option>`).join('');
 
   // Tabs
-  const tabNames=['análisis','stats','campeones','partidas','gráficas','química','rating'];
+  const tabNames=['análisis','stats','campeones','partidas','gráficas','química'];
   const tabs=tabNames.map(t=>`<div class="tab${p.activeTab===t?' active':''}" onclick="setTab(${idx},'${t}')">${t}</div>`).join('');
 
   // Stats content
@@ -2748,11 +2739,11 @@ function buildCard(p,idx){
   if(adv)statsContent+=buildAdvancedStatsSection(adv,idx);
 
   // Matches
-  const filterOpts=['all','solo','flex','aram','caos','win','lose'].map(f=>
-    `<button class="chip${p.filterStat===f?' active':''}" onclick="setFilter(${idx},'${f}')">${{all:'ALL',solo:'SOLO',flex:'FLEX',aram:'ARAM',caos:'CAOS',win:'WIN',lose:'LOSE'}[f]}</button>`
+  const filterOpts=['all','solo','flex','aram','arena','caos','win','lose'].map(f=>
+    `<button class="chip${p.filterStat===f?' active':''}" onclick="setFilter(${idx},'${f}')">${{all:'ALL',solo:'SOLO',flex:'FLEX',aram:'ARAM',arena:'ARENA',caos:'CAOS',win:'WIN',lose:'LOSE'}[f]}</button>`
   ).join('');
-  const _allPool=[...new Map([...(p.matchesSolo||[]),...(p.matchesFlex||[]),...(p.matchesAram||[]),...(p.matchesCaos||[])].map(m=>[m._matchId,m])).values()];
-  const basePool=p.filterStat==='solo'?(p.matchesSolo||[]):p.filterStat==='flex'?(p.matchesFlex||[]):p.filterStat==='aram'?(p.matchesAram||[]):p.filterStat==='caos'?(p.matchesCaos||[]):_allPool;
+  const _allPool=[...new Map([...(p.matchesSolo||[]),...(p.matchesFlex||[]),...(p.matchesAram||[]),...(p.matchesArena||[]),...(p.matchesCaos||[])].map(m=>[m._matchId,m])).values()];
+  const basePool=p.filterStat==='solo'?(p.matchesSolo||[]):p.filterStat==='flex'?(p.matchesFlex||[]):p.filterStat==='aram'?(p.matchesAram||[]):p.filterStat==='arena'?(p.matchesArena||[]):p.filterStat==='caos'?(p.matchesCaos||[]):_allPool;
   const champCounts={};basePool.forEach(m=>{champCounts[m.championName]=(champCounts[m.championName]||0)+1;});
   const champChips=Object.entries(champCounts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([name,cnt])=>`<button class="chip${p.filterChamp===name?' active':''}" onclick="setFilterChamp(${idx},'${p.filterChamp===name?'':name}')" style="font-size:11px">${name}(${cnt})</button>`).join('');
   const filtered=filterMatches(p,p.filterStat);
@@ -2767,7 +2758,7 @@ function buildCard(p,idx){
     const _allTen=[m,...(m._allies||[]),...(m._enemies||[])];
     const _rankMap=new Map(_allTen.map(a=>({p:a.puuid,s:_pScore(a).total})).sort((a,b)=>b.s-a.s).map((a,i)=>[a.p,{rank:i+1,score:a.s}]));
     const _rkC=r=>r===1?'#ffd447':r===2?'#c0c0c0':r===3?'#c87533':r===_allTen.length?'var(--red)':r<=5?'var(--cyan)':'var(--text3)';
-    const _rkL=r=>r===1?'MVP':r===_allTen.length?'INTER':'#'+r;
+    const _rkL=r=>r===1?'MVP':'#'+r;
     const _mRi=_rankMap.get(m.puuid)||{rank:5,score:50};
     const mGr=scoreToGrade(_mRi.score);
     const isRemake=m._mins<=3&&m._surrender;const isShort=m._mins<10&&!isRemake;
@@ -2833,7 +2824,7 @@ function buildCard(p,idx){
       <div class="mres ${resCls}">${isRemake?'RC':isShort?'AFK':m.win?'WIN':'LOSE'}</div>
       <img src="${champImg}" class="mchamp" loading="lazy" onerror="this.style.display='none'" title="${m.championName}">
       <div class="mkda-block">
-        ${!isShort?`<span style="font-size:16px;font-weight:800;font-family:'Share Tech Mono',monospace;color:${_rkC(_mRi.rank)};flex-shrink:0;min-width:30px">${_rkL(_mRi.rank)}</span><span style="font-size:16px;font-weight:800;font-family:'Share Tech Mono',monospace;color:${mGr.c};flex-shrink:0;min-width:18px">${mGr.g}</span>`:'<span style="min-width:55px;display:inline-block"></span>'}
+        ${!isShort?`<span style="font-size:16px;font-weight:800;font-family:'Share Tech Mono',monospace;color:${_rkC(_mRi.rank)};flex-shrink:0;min-width:30px">${_rkL(_mRi.rank)}</span><span style="font-size:16px;font-weight:800;font-family:'Share Tech Mono',monospace;color:${mGr.c};flex-shrink:0;min-width:18px">${mGr.g}</span>`:`<span style="font-size:16px;font-weight:800;font-family:'Share Tech Mono',monospace;flex-shrink:0;min-width:30px;visibility:hidden">—</span><span style="font-size:16px;font-weight:800;font-family:'Share Tech Mono',monospace;flex-shrink:0;min-width:18px;visibility:hidden">—</span>`}
         <div class="mkda">${m.kills}/<span style="color:var(--red)">${m.deaths}</span>/${m.assists}</div>
         <div class="mkda-ratio" style="color:${kdaC}">KDA ${mkda.toFixed(2)}</div>
       </div>
@@ -2985,41 +2976,27 @@ function buildCard(p,idx){
     `:'';
     // Humor/sarcasm block
     const humorLines=[];
-    const percA=scoreToPercentile(adaptTotal);
     if(adaptTotal<35){
-      const msgs=['Las estadísticas tienen vergüenza ajena. Pero te las muestran igual.','El equipo enemigo te manda sus saludos y te agradece las donaciones.','Reinstalar no arregla esto, pero siempre es una opción.','¿Todo bien en casa? Los números dicen que no, y los números no mienten.'];
+      const msgs=['Las métricas indican margen de mejora significativo — lo cual es una buena noticia.','Los números son directos: hay trabajo por hacer. La parte difícil ya pasó, que es verlos.','Reinstalar no cambia las estadísticas, pero revisar los replays sí.','Los números no mienten — y eso, paradójicamente, es lo más útil que pueden hacer.'];
       humorLines.push(msgs[Math.floor(Math.random()*msgs.length)]);
     } else if(adaptTotal<48){
-      const msgs=['El elo no miente. Tú sí, pero el elo no.','¿Has considerado jugar otra línea? Pregunta sincera.','El sistema te puso en este elo por algo. Ese algo eres tú.','Con este rendimiento, el ascenso es una promesa que se renueva cada temporada.'];
+      const msgs=['El elo no miente. Tú sí, pero el elo no.','¿Has considerado jugar otra línea? Pregunta sincera.','El sistema te ubicó aquí en base al rendimiento histórico. El sistema es coherente.','Con este rendimiento, el ascenso es una promesa que se renueva cada temporada.'];
       humorLines.push(msgs[Math.floor(Math.random()*msgs.length)]);
     } else if(adaptTotal>=75){
       const msgs=['Esto sí tiene nivel. Cuidado con la soberbia — LoL tiene una forma especial de bajarte los humos.','Stats de élite. El equipo lo sabe aunque no te vote MVP.','¿Y por qué no estás en Masters? Pregunta legítima.'];
       humorLines.push(msgs[Math.floor(Math.random()*msgs.length)]);
     }
-    if(s2.avgDeaths>=6){humorLines.push(`${s2.avgDeaths.toFixed(1)} muertes por partida. Hay diferencia entre jugar y financiar al enemigo — y tú cruzaste esa línea hace tiempo.`);}
-    if(s2.wr<45&&s2.games>=8){humorLines.push(`Con ${s2.games} partidas de muestra y este WR, ya no es mala racha. Es una identidad.`);}
-    if(s2.kp<45&&(role==='SUPPORT'||role==='JUNGLE')){humorLines.push('KP tan bajo que el equipo no sabe bien si juegas con ellos o contra ellos.');}
+    if(s2.avgDeaths>=6){humorLines.push(`${s2.avgDeaths.toFixed(1)} muertes por partida es tiempo considerable fuera del juego — reducirlas tiene impacto directo en el resultado.`);}
+    if(s2.wr<45&&s2.games>=8){humorLines.push(`Con ${s2.games} partidas de muestra y este WR, es un patrón más que una racha. Hay algo sistemático que identificar.`);}
+    if(s2.kp<45&&(role==='SUPPORT'||role==='JUNGLE')){humorLines.push('KP bajo en este rol sugiere estar desconectado del flujo del equipo — participar más en objetivos puede cambiar eso.');}
     const humorHtml=humorLines.length?`<div class="insight" style="border-left-color:var(--purple);background:rgba(168,85,247,.06);font-style:italic">
       <span style="color:var(--purple)">🎭 El Erudito opina:</span><br><span>${humorLines.join('<br><br>')}</span>
     </div>`:'';
     return`<div class="apanel">
       ${multiRoleHtml}
       ${rankSummary}
-      <div class="atitle">Valoración vs elo (${s2.games} partidas · ${queueLabel})</div>
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap">
-        <div style="font-family:'Orbitron',monospace;font-weight:900;line-height:1;color:${scoreToGrade(adaptTotal).c}"><span style="font-size:72px">${scoreToGrade(adaptTotal).g}</span><div style="font-size:15px;opacity:.6;font-family:'Share Tech Mono',monospace;margin-top:4px">${Math.round(adaptTotal)}/100</div></div>
-        <div>
-          <div style="font-size:22px;font-family:'Orbitron',monospace;font-weight:700;color:${percA.dir==='top'?'var(--green)':percA.dir==='bot'?'var(--red)':'var(--gold)'}">${percA.pct}</div>
-          <div style="font-size:15px;color:var(--text3);font-family:'Share Tech Mono',monospace;margin-top:4px">de los ${_roleEs(role)} en este elo</div>
-          <div style="font-size:13px;color:var(--text3);font-style:italic;margin-top:6px">${({'Top 2%':'Eres el problema de los demás en este elo.','Top 10%':'El equipo lo nota, aunque no lo admita.','Top 20%':'Mejor que 4 de cada 5 jugadores de tu elo.','Top 35%':'Por encima de la mitad. Falta el salto.','Promedio':'Ni héroe ni villano. El elo te tiene donde mereces.','Peor 40%':'Hay trabajo que hacer — y bastante.','Peor 25%':'El elo sabe algo que tú todavía no.','Peor 15%':'Los números no están de tu lado.','Peor 5%':'Estadísticamente, eres el problema del equipo.'})[percA.pct]||''}</div>
-        </div>
-      </div>
       ${humorHtml}
       ${focusHtml}
-      <div class="dim-grid">${dimCards}</div>
-      ${(()=>{const _lm=matchSet[0];if(!_lm)return'';const _lmR=({TOP:'TOP',JUNGLE:'JUNGLE',MIDDLE:'MID',BOTTOM:'BOT',UTILITY:'SUPPORT'})[_lm.teamPosition]||role;const _lmCt=detectChampType(_lm.championName,_lm.teamPosition);const _lmTips=autoSuggestMatch(_lm,_lmR,_lmCt,tier);const isRm=_lm._mins<=3&&_lm._surrender;const isShort=!isRm&&_lm._mins<10;const resC=isRm||isShort?'var(--text3)':_lm.win?'var(--green)':'var(--red)';const resL=isRm?'RC':isShort?'AFK':_lm.win?'WIN':'LOSE';const dt=_lm._gameCreation?new Date(_lm._gameCreation).toLocaleDateString('es-CL',{day:'2-digit',month:'short'}):'';const _resCls=isRm||isShort?'rehecha':_lm.win?'win':'lose';const _lmMin=Math.max(1,_lm._mins||1);const _lmKda=_lm.deaths===0?(_lm.kills+_lm.assists):((_lm.kills+_lm.assists)/_lm.deaths);const _lmGs={kda:_lmKda,csMin:_lm._csMin||0,vision:(_lm.visionScore||0)/_lmMin,dmg:(_lm.totalDamageDealtToChampions||0)/_lmMin,avgDeaths:_lm.deaths,kp:_lm._kp||0,goldMin:_lm._goldMin||0};const _lmGr=!isShort?scoreToGrade(computeScore(_lmGs,_lmR,_lmCt,tier).total):null;const _lmKdaC=_lmKda>=4?'var(--green)':_lmKda>=2.5?'var(--cyan)':'var(--text3)';const _lmIt=[_lm.item0,_lm.item1,_lm.item2,_lm.item3,_lm.item4,_lm.item5,_lm.item6];const _lmItHtml=_lmIt.some(id=>id&&id>0)?`<div style="display:flex;gap:2px;align-items:center;flex:1;justify-content:center">${_lmIt.map(id=>id&&id>0?`<img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/item/${id}.png" class="mi-item" loading="lazy" onerror="this.style.display='none'">`:`<span class="mi-item-empty"></span>`).join('')}</div>`:'';const _rowHtml=`<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:4px;background:var(--bg3);margin-bottom:8px;overflow:hidden"><div class="mres ${_resCls}" style="writing-mode:vertical-rl;height:38px;font-size:10px;padding:2px 3px;flex-shrink:0">${resL}</div><img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${_lm.championName}.png" style="width:36px;height:36px;border-radius:4px;border:1px solid var(--border);flex-shrink:0" loading="lazy" onerror="this.style.display='none'" title="${_lm.championName}">${_lmGr?`<span style="font-size:16px;font-weight:800;font-family:'Orbitron',monospace;color:${_lmGr.c};flex-shrink:0">${_lmGr.g}</span>`:''}<span style="font-size:15px;font-weight:700;font-family:'Share Tech Mono',monospace;flex-shrink:0">${_lm.kills}/<span style="color:var(--red)">${_lm.deaths}</span>/${_lm.assists}</span><span style="font-size:12px;font-family:'Share Tech Mono',monospace;color:${_lmKdaC};flex-shrink:0">KDA ${_lmKda.toFixed(2)}</span><span style="font-size:12px;color:var(--text3);font-family:'Share Tech Mono',monospace;flex-shrink:0">${_lm._mins}m</span>${_lmItHtml}<div style="display:flex;align-items:center;gap:3px;flex-shrink:0;margin-left:auto">${_lm.totalDamageDealtToChampions?`<span class="stat-pill sp-dmg">⚔${(_lm.totalDamageDealtToChampions/1000).toFixed(1)}k</span>`:''}<span class="stat-pill sp-gold">${(_lm.goldEarned/1000).toFixed(1)}k</span><span class="stat-pill sp-vis">👁${_lm.visionScore}</span><span class="stat-pill sp-cs">${_lm._csMin.toFixed(1)}</span></div></div>`;return`<details class="adv-collapsible"><summary>Última partida <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">${_lm.championName} · <span style="color:${resC};font-weight:700">${resL}</span> · ${Math.round(_lm._mins||0)}min${dt?' · '+dt:''}</span></summary><div style="padding-top:6px">${_rowHtml}${_lmTips.map(sg=>`<div class="insight ${sg.tp}"><span>${sg.tx}</span>${sg.goal?`<div style="margin-top:6px;font-size:11px;font-family:'Share Tech Mono',monospace;color:var(--cyan);opacity:.85">▸ OBJETIVO: ${sg.goal}</div>`:''}</div>`).join('')}</div></details>`;})()}
-      ${tendRows.length?`<details class="adv-collapsible"><summary>Tendencias <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">(últimas ${matchSet.length} partidas ${queueLabel})</span></summary>${tendRows.join('')}</details>`:''}
-      ${champInner?`<details class="adv-collapsible"><summary>Campeones: ¿qué jugar? <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">(últimas ${_champPoolSize} partidas ${queueLabel})</span></summary>${champInner}</details>`:''}
       <details class="adv-collapsible" open><summary>Consejos del Erudito</summary>
       <div class="ai-chips">
         ${[['general','Analiza mis partidas recientes'],['skill','¿Cuál es mi nivel de habilidad?'],['team','¿Cómo está mi suerte de equipo?'],['champ','¿Qué campeón debería jugar?']].map(([t,lbl])=>`<button class="ai-chip" onclick="callAIAnalysis('${puuid}','${t}')"><span class="ai-spark">✦</span>${lbl}</button>`).join('')}
@@ -3027,6 +3004,9 @@ function buildCard(p,idx){
       <div id="ai-result-${(puuid||'x').slice(-8)}"></div>
       ${sugs.map(sg=>`<div class="insight ${sg.tp}"><span>${sg.tx}</span>${sg.goal?`<div style="margin-top:6px;font-size:11px;font-family:'Share Tech Mono',monospace;color:var(--cyan);opacity:.85">▸ OBJETIVO: ${sg.goal}</div>`:''}</div>`).join('')}
       </details>
+      ${(()=>{const _lm=matchSet[0];if(!_lm)return'';const _lmR=({TOP:'TOP',JUNGLE:'JUNGLE',MIDDLE:'MID',BOTTOM:'BOT',UTILITY:'SUPPORT'})[_lm.teamPosition]||role;const _lmCt=detectChampType(_lm.championName,_lm.teamPosition);const _lmTips=autoSuggestMatch(_lm,_lmR,_lmCt,tier);const isRm=_lm._mins<=3&&_lm._surrender;const isShort=!isRm&&_lm._mins<10;const resC=isRm||isShort?'var(--text3)':_lm.win?'var(--green)':'var(--red)';const resL=isRm?'RC':isShort?'AFK':_lm.win?'WIN':'LOSE';const dt=_lm._gameCreation?new Date(_lm._gameCreation).toLocaleDateString('es-CL',{day:'2-digit',month:'short'}):'';const _resCls=isRm||isShort?'rehecha':_lm.win?'win':'lose';const _lmMin=Math.max(1,_lm._mins||1);const _lmKda=_lm.deaths===0?(_lm.kills+_lm.assists):((_lm.kills+_lm.assists)/_lm.deaths);const _lmGs={kda:_lmKda,csMin:_lm._csMin||0,vision:(_lm.visionScore||0)/_lmMin,dmg:(_lm.totalDamageDealtToChampions||0)/_lmMin,avgDeaths:_lm.deaths,kp:_lm._kp||0,goldMin:_lm._goldMin||0};const _lmGr=!isShort?scoreToGrade(computeScore(_lmGs,_lmR,_lmCt,tier).total):null;const _lmKdaC=_lmKda>=4?'var(--green)':_lmKda>=2.5?'var(--cyan)':'var(--text3)';const _lmIt=[_lm.item0,_lm.item1,_lm.item2,_lm.item3,_lm.item4,_lm.item5,_lm.item6];const _lmItHtml=_lmIt.some(id=>id&&id>0)?`<div style="display:flex;gap:2px;align-items:center;flex:1;justify-content:center">${_lmIt.map(id=>id&&id>0?`<img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/item/${id}.png" class="mi-item" loading="lazy" onerror="this.style.display='none'">`:`<span class="mi-item-empty"></span>`).join('')}</div>`:'';const _rowHtml=`<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:4px;background:var(--bg3);margin-bottom:8px;overflow:hidden"><div class="mres ${_resCls}" style="writing-mode:vertical-rl;height:38px;font-size:10px;padding:2px 3px;flex-shrink:0">${resL}</div><img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${_lm.championName}.png" style="width:36px;height:36px;border-radius:4px;border:1px solid var(--border);flex-shrink:0" loading="lazy" onerror="this.style.display='none'" title="${_lm.championName}">${_lmGr?`<span style="font-size:16px;font-weight:800;font-family:'Orbitron',monospace;color:${_lmGr.c};flex-shrink:0">${_lmGr.g}</span>`:''}<span style="font-size:15px;font-weight:700;font-family:'Share Tech Mono',monospace;flex-shrink:0">${_lm.kills}/<span style="color:var(--red)">${_lm.deaths}</span>/${_lm.assists}</span><span style="font-size:12px;font-family:'Share Tech Mono',monospace;color:${_lmKdaC};flex-shrink:0">KDA ${_lmKda.toFixed(2)}</span><span style="font-size:12px;color:var(--text3);font-family:'Share Tech Mono',monospace;flex-shrink:0">${_lm._mins}m</span>${_lmItHtml}<div style="display:flex;align-items:center;gap:3px;flex-shrink:0;margin-left:auto">${_lm.totalDamageDealtToChampions?`<span class="stat-pill sp-dmg">⚔${(_lm.totalDamageDealtToChampions/1000).toFixed(1)}k</span>`:''}<span class="stat-pill sp-gold">${(_lm.goldEarned/1000).toFixed(1)}k</span><span class="stat-pill sp-vis">👁${_lm.visionScore}</span><span class="stat-pill sp-cs">${_lm._csMin.toFixed(1)}</span></div></div>`;return`<details class="adv-collapsible"><summary>Última partida <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">${_lm.championName} · <span style="color:${resC};font-weight:700">${resL}</span> · ${Math.round(_lm._mins||0)}min${dt?' · '+dt:''}</span></summary><div style="padding-top:6px">${_rowHtml}${_lmTips.map(sg=>`<div class="insight ${sg.tp}"><span>${sg.tx}</span>${sg.goal?`<div style="margin-top:6px;font-size:11px;font-family:'Share Tech Mono',monospace;color:var(--cyan);opacity:.85">▸ OBJETIVO: ${sg.goal}</div>`:''}</div>`).join('')}</div></details>`;})()}
+      ${tendRows.length?`<details class="adv-collapsible"><summary>Tendencias <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">(últimas ${matchSet.length} partidas ${queueLabel})</span></summary>${tendRows.join('')}</details>`:''}
+      ${champInner?`<details class="adv-collapsible"><summary>Campeones: ¿qué jugar? <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">(últimas ${_champPoolSize} partidas ${queueLabel})</span></summary>${champInner}</details>`:''}
     </div>`;
   }
 
@@ -3055,119 +3035,6 @@ function buildCard(p,idx){
 
   let analysisContent=`<div class="adv-tabs-row">${advTabs}</div>${adviceBody}`;
 
-  // Note — 5 stars, no auto-suggestions, recent allies
-  const stars5=[1,2,3,4,5].map(n=>`<span class="star${n<=p.note?' lit':''}" onclick="setNote(${idx},${n})" style="font-size:28px">${n<=p.note?'★':'☆'}</span>`).join('');
-  const starLabels=['','Muy malo','Malo','Regular','Bueno','Excelente'];
-  // Jugadores de las últimas 3 partidas — agrupado por partida, aliados + rivales
-  const _nc2=(()=>{try{return JSON.parse(localStorage.getItem('loltrack_names')||'{}');}catch(e){return{};}})();
-  const _cachedRanks2=(()=>{try{return JSON.parse(localStorage.getItem('loltrack_ally_ranks')||'{}');}catch(e){return{};}})();
-  const _allLoadedMatches=[...(p.matchesSolo||[]),...(p.matchesFlex||[]),...(p.matchesAram||[]),...(p.matchesOther||[])];
-  function _rmpRow(a,isEnemy){
-    const cached=_nc2[a.puuid];
-    const name=cached?.name||a.riotIdGameName||null;
-    const tag=cached?.tag||a.riotIdTagline||'';
-    const dn=name?`${name}${tag?'#'+tag:''}`:'Desconocido';
-    const cImg=`https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${a.championName||'Ryze'}.png`;
-    const ti=players.findIndex(pl=>pl.puuid===a.puuid);
-    const isT=ti>=0;
-    const kdaR=a.deaths===0?(a.kills+a.assists):((a.kills+a.assists)/a.deaths);
-    const kdaC=kdaR>=3?'var(--green)':kdaR>=2?'var(--text2)':'var(--red)';
-    const tog=_allLoadedMatches.filter(mx=>(mx._allies||[]).some(aa=>aa.puuid===a.puuid)||(mx._enemies||[]).some(ee=>ee.puuid===a.puuid)).length;
-    const cr=_cachedRanks2[a.puuid];
-    const _rkTier=cr?.tier?`${tierEs(cr.tier)}${cr.rank?' '+cr.rank:''}`:null;
-    const _rkCol=cr?.tier?getTierCol(cr.tier):'var(--text3)';
-    const _rkLp=cr?.lp!=null?`${cr.lp} LP`:null;
-    const bc=isEnemy?'rgba(255,45,120,.25)':'rgba(0,229,255,.2)';
-    const sn=name?name.replace(/'/g,"\\'"):'';const st=(tag||'').replace(/'/g,"\\'");
-    return`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
-      <img src="${cImg}" style="width:40px;height:40px;border-radius:5px;flex-shrink:0;border:1px solid ${bc};object-fit:cover" loading="lazy" onerror="this.style.opacity='.3'">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:14px;color:${name?'var(--text)':'var(--text3)'};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${dn}</div>
-        <div style="display:flex;align-items:baseline;gap:5px;margin-top:3px;flex-wrap:wrap">
-          ${_rkTier?`<span style="font-size:12px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${_rkCol}">${_rkTier}</span>`:'<span style="font-size:11px;color:var(--text3);font-family:\'Share Tech Mono\',monospace">Sin rango</span>'}
-          ${_rkLp?`<span style="font-size:11px;color:var(--text2);font-family:'Share Tech Mono',monospace">${_rkLp}</span>`:''}
-          ${tog>=2?`<span style="font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace">· ${tog}×</span>`:''}
-        </div>
-      </div>
-      <div style="text-align:right;flex-shrink:0;min-width:60px">
-        <div style="font-size:13px;font-family:'Share Tech Mono',monospace;color:${kdaC};font-weight:700">${a.kills??'?'}/${a.deaths??'?'}/${a.assists??'?'}</div>
-        <div style="font-size:11px;font-family:'Share Tech Mono',monospace;color:${kdaC};opacity:.8">KDA ${kdaR.toFixed(2)}</div>
-      </div>
-      <div style="flex-shrink:0;display:flex;gap:4px">
-        ${isT?`<button class="add-ally-btn" onclick="switchToCard(${ti},'rating')" style="font-size:11px;padding:4px 9px;border-color:var(--cyan);color:var(--cyan)">★</button>`:''}
-        ${!isT&&name?`<button class="add-ally-btn" onclick="addAllyFromMatch('${sn}','${st}',this)" style="font-size:11px;padding:4px 9px">+</button>`:''}
-        ${!name&&a.puuid?`<button class="add-ally-btn" onclick="lookupAllyName('${a.puuid}',${idx},this)" style="font-size:11px;padding:4px 9px">🔍</button>`:''}
-      </div>
-    </div>`;
-  }
-  const recentMatchCards=p.matches.slice(0,3).map(m=>{
-    const isRm=m._mins<10;
-    const resC=isRm?'var(--text3)':m.win?'var(--green)':'var(--red)';
-    const resL=isRm?(m._mins<=3?'RC':'AFK'):m.win?'VICTORIA':'DERROTA';
-    const qL=m._queue===420?'SOLO':m._queue===440?'FLEX':m._queue===450?'ARAM':'NORM';
-    const dt=m._gameCreation?new Date(m._gameCreation).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit'}):'';
-    const cImg=`https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${m.championName}.png`;
-    const allyRows=(m._allies||[]).map(a=>_rmpRow(a,false)).join('');
-    const enemyRows=(m._enemies||[]).map(a=>_rmpRow(a,true)).join('');
-    return`<div style="border:1px solid var(--border2);border-left:3px solid ${resC};border-radius:6px;padding:12px 14px;margin-bottom:12px;background:${m.win?'rgba(0,229,255,.02)':'rgba(255,45,120,.02)'}">
-      <div style="display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
-        <img src="${cImg}" style="width:40px;height:40px;border-radius:5px;flex-shrink:0;object-fit:cover">
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span style="font-size:14px;font-weight:800;color:${resC};font-family:'Orbitron',monospace;letter-spacing:.5px">${resL}</span>
-            <span style="font-size:13px;font-weight:700;color:var(--text);font-family:'Share Tech Mono',monospace">${m.kills}/${m.deaths}/${m.assists}</span>
-            <span style="font-size:12px;color:var(--text3);font-family:'Share Tech Mono',monospace">${Math.round(m._mins||0)}min · ${qL}</span>
-          </div>
-          <div style="font-size:12px;color:var(--text3);font-family:'Share Tech Mono',monospace;margin-top:3px">${m.championName}${dt?' · '+dt:''}</div>
-        </div>
-      </div>
-      <div style="margin-top:9px">
-        <div style="font-size:11px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:4px">ALIADOS</div>
-        ${allyRows||`<div style="font-size:12px;color:var(--text3);padding:4px 0">Sin datos</div>`}
-      </div>
-      <div style="margin-top:10px">
-        <div style="font-size:11px;color:var(--red);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:4px">RIVALES</div>
-        ${enemyRows||`<div style="font-size:12px;color:var(--text3);padding:4px 0">Sin datos</div>`}
-      </div>
-    </div>`;
-  }).join('');
-  // Recent matches mini-list for nota tab
-  const notaMatchRows=p.matches.slice(0,5).map(m=>{
-    const cImg=`https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${m.championName}.png`;
-    const isRm=m._mins<10;
-    const rC=isRm?'var(--text3)':m.win?'var(--green)':'var(--red)';
-    const rL=isRm?(m._mins<=3?'RC':'AFK'):m.win?'W':'L';
-    const mk=m.deaths===0?(m.kills+m.assists):((m.kills+m.assists)/m.deaths);
-    const kC=mk>=3?'var(--green)':mk>=2?'var(--text2)':'var(--red)';
-    const qL=m._queue===420?'SOLO':m._queue===440?'FLEX':m._queue===450?'ARAM':'NORM';
-    const dt=m._gameCreation?new Date(m._gameCreation).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit'}):'';
-    return`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:11px;font-weight:900;font-family:'Orbitron',monospace;color:${rC};min-width:12px;text-align:center">${rL}</span>
-      <img src="${cImg}" style="width:30px;height:30px;border-radius:3px;object-fit:cover;border:1px solid var(--border);flex-shrink:0" loading="lazy" onerror="this.style.display='none'">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:15px;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.championName}</div>
-        <div style="font-size:11px;color:var(--text3)">${qL} · ${m._mins}min${dt?' · '+dt:''}</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div style="font-size:11px;font-family:'Share Tech Mono',monospace;color:var(--text)">${m.kills}/${m.deaths}/${m.assists}</div>
-        <div style="font-size:11px;font-family:'Share Tech Mono',monospace;color:${kC}">KDA ${mk.toFixed(2)}</div>
-      </div>
-    </div>`;
-  }).join('');
-  const noteContent=`<div class="note-sec">
-    <div style="margin-bottom:14px">
-      <div class="nl" style="margin-bottom:10px">Tu calificación</div>
-      <div style="display:flex;align-items:center;gap:14px">
-        <div class="stars">${stars5}</div>
-        <div style="font-size:22px;font-weight:900;font-family:'Orbitron',monospace;color:var(--gold)">${p.note||'—'}<span style="font-size:13px;color:var(--text3)">/5</span></div>
-        ${p.note?`<div style="font-size:15px;color:var(--text2)">${starLabels[p.note]||''}</div>`:''}
-      </div>
-    </div>
-    ${notaMatchRows?`<div style="margin-bottom:14px"><div class="nl" style="margin-bottom:8px">Últimas partidas</div>${notaMatchRows}</div>`:''}
-    <textarea id="cmt-${idx}" placeholder="Escribe tu comentario sobre este jugador..." oninput="saveComment(${idx})" style="min-height:80px">${p.comment}</textarea>
-    ${recentMatchCards?`<div style="margin-top:14px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="nl">Jugadores de las últimas 3 partidas</div><button id="fetch-note-ranks-${idx}" onclick="fetchNoteRanks(${idx})" style="font-size:11px;padding:4px 10px;background:transparent;border:1px solid var(--border2);color:var(--text3);border-radius:3px;cursor:pointer;font-family:'Share Tech Mono',monospace" onmouseover="this.style.borderColor='var(--cyan)';this.style.color='var(--cyan)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">Cargar rangos</button></div>${recentMatchCards}</div>`:''}
-    ${(()=>{try{const _pr=JSON.parse(localStorage.getItem('loltrack_peer_ratings')||'{}');const _arr=_pr[p.puuid]||[];return _arr.length?`<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace">${_arr.length} calificación${_arr.length!==1?'es':''} guardada${_arr.length!==1?'s':''}</span><button onclick="clearPeerRating(${idx})" style="font-size:11px;padding:4px 10px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:3px;cursor:pointer;font-family:'Share Tech Mono',monospace">🗑 Limpiar</button></div>`:'';} catch(e){return '';}})()}
-  </div>`;
 
 
   // ── BADGES ──────────────────────────────────────────────────────────
@@ -3430,21 +3297,10 @@ function buildCard(p,idx){
     <div style="padding:8px 0;font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace;text-align:center">// Rank mostrado para los 15 más frecuentes · <span style="cursor:pointer;color:var(--cyan);text-decoration:underline" onclick="fetchAllyRanksForChem(${idx})">Actualizar ranks</span></div>
   </div>`:`<div class="loading-ph" style="padding:24px">// Nadie ha jugado lo suficiente contigo en esta cola — o tú con nadie</div>`}`;
 
-  const content={stats:statsContent,campeones:champsContent,gráficas:graphsContent,partidas:matchesContent,'análisis':analysisContent,'química':chemContent,rating:noteContent};
+  const content={stats:statsContent,campeones:champsContent,gráficas:graphsContent,partidas:matchesContent,'análisis':analysisContent,'química':chemContent};
 
   const isSolo=players.length===1;
   if(isSolo)div.classList.add('solo');
-  // Peer rating
-  let _peerRatingHtml='';
-  try{
-    const _prStore=JSON.parse(localStorage.getItem('loltrack_peer_ratings')||'{}');
-    const _prArr=_prStore[p.puuid]||[];
-    if(_prArr.length>0){
-      const _avg=_prArr.reduce((s,r)=>s+r.stars,0)/_prArr.length;
-      const _full=Math.round(_avg);
-      _peerRatingHtml=`<div style="font-size:13px;color:var(--gold);margin-top:3px;line-height:1;font-family:'Share Tech Mono',monospace">${'★'.repeat(_full)}${'☆'.repeat(5-_full)} <span style="color:var(--text3)">(${_prArr.length})</span></div>`;
-    }
-  }catch(e){}
   const _avatarHtml=p.profileIconId
     ?`<img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/profileicon/${p.profileIconId}.png" class="avatar" style="object-fit:cover" onerror="this.outerHTML='<div class=\\'avatar\\'>${p.gameName[0].toUpperCase()}</div>'">`
     :`<div class="avatar">${p.gameName[0].toUpperCase()}</div>`;
@@ -3519,7 +3375,6 @@ function buildCard(p,idx){
       <div style="flex:1;min-width:0">
         <div class="cname">${p.gameName}</div>
         <div class="ctag">#${p.tagLine} · LV.${p.level}</div>
-        ${_peerRatingHtml}
       </div>
       <div class="chead-actions">
         <div id="load-prog-${idx}" style="display:none;align-items:center;justify-content:center"></div>
@@ -3549,8 +3404,8 @@ function buildCard(p,idx){
 }
 
 function filterMatches(p,f){
-  const allPool=[...new Map([...(p.matchesSolo||[]),...(p.matchesFlex||[]),...(p.matchesAram||[]),...(p.matchesCaos||[])].map(m=>[m._matchId,m])).values()].sort((a,b)=>(b._gameCreation||0)-(a._gameCreation||0));
-  const base=f==='solo'?(p.matchesSolo||[]):f==='flex'?(p.matchesFlex||[]):f==='aram'?(p.matchesAram||[]):f==='caos'?(p.matchesCaos||[]):allPool;
+  const allPool=[...new Map([...(p.matchesSolo||[]),...(p.matchesFlex||[]),...(p.matchesAram||[]),...(p.matchesArena||[]),...(p.matchesCaos||[])].map(m=>[m._matchId,m])).values()].sort((a,b)=>(b._gameCreation||0)-(a._gameCreation||0));
+  const base=f==='solo'?(p.matchesSolo||[]):f==='flex'?(p.matchesFlex||[]):f==='aram'?(p.matchesAram||[]):f==='arena'?(p.matchesArena||[]):f==='caos'?(p.matchesCaos||[]):allPool;
   const matches=p.filterChamp?base.filter(m=>m.championName===p.filterChamp):base;
   if(!matches.length)return[];
   switch(f){
@@ -3586,7 +3441,7 @@ function rebuildCard(idx,withComp){
     if(withComp)renderComp();
   },0);
 }
-function setTab(idx,tab){players[idx].activeTab=tab;rebuildCard(idx);if(tab==='química')fetchAllyRanksForChem(idx);if(tab==='rating')fetchNoteRanks(idx);}
+function setTab(idx,tab){players[idx].activeTab=tab;rebuildCard(idx);if(tab==='química')fetchAllyRanksForChem(idx);}
 function showMatchAnalysis(idx,mi){
   const p=players[idx];if(!p)return;
   const m=(p.matches||[])[mi];if(!m)return;
@@ -3643,33 +3498,7 @@ function showMatchAnalysis(idx,mi){
 }
 function setScoreQueue(idx,q){players[idx].scoreQueue=q;rebuildCard(idx);}
 function setFilter(idx,f){players[idx].filterStat=f;players[idx].matchVisCount=10;rebuildCard(idx);}
-function setNote(idx,n){
-  players[idx].note=n===players[idx].note?0:n;
-  if(players[idx].note>0){
-    const _pr=(()=>{try{return JSON.parse(localStorage.getItem('loltrack_peer_ratings')||'{}');}catch(e){return{};}})();
-    const puuid=players[idx].puuid;
-    const today=new Date().toDateString();
-    const arr=_pr[puuid]||[];
-    const ei=arr.findIndex(r=>new Date(r.ts).toDateString()===today);
-    if(ei>=0)arr[ei]={stars:players[idx].note,ts:Date.now()};
-    else arr.push({stars:players[idx].note,ts:Date.now()});
-    _pr[puuid]=arr;
-    try{localStorage.setItem('loltrack_peer_ratings',JSON.stringify(_pr));}catch(e){}
-  }
-  rebuildCard(idx);
-}
-function switchToCard(idx,tab){players[idx].activeTab=tab||'rating';rebuildCard(idx);document.getElementById('card-'+idx)?.scrollIntoView({behavior:'smooth',block:'start'});}
-function saveComment(idx){const ta=document.getElementById(`cmt-${idx}`);if(ta){players[idx].comment=ta.value;savePlayers();}}
-function clearPeerRating(idx){
-  const puuid=players[idx]?.puuid;if(!puuid)return;
-  try{const _pr=JSON.parse(localStorage.getItem('loltrack_peer_ratings')||'{}');delete _pr[puuid];localStorage.setItem('loltrack_peer_ratings',JSON.stringify(_pr));}catch(e){}
-  rebuildCard(idx);
-}
-function appendComment(idx,text){
-  const ta=document.getElementById(`cmt-${idx}`);
-  ta.value=ta.value.trim()?(ta.value.trim()+'\n'+text):text;
-  players[idx].comment=ta.value;
-}
+function switchToCard(idx,tab){players[idx].activeTab=tab||'análisis';rebuildCard(idx);document.getElementById('card-'+idx)?.scrollIntoView({behavior:'smooth',block:'start'});}
 function toggleEdit(idx){players[idx].editOpen=!players[idx].editOpen;rebuildCard(idx);}
 function setRole(idx,r){players[idx].role=r;rebuildCard(idx,true);}
 function setChampType(idx,t){players[idx].champType=t;rebuildCard(idx,true);}
@@ -3677,7 +3506,7 @@ function savePlayers(){
   try{localStorage.setItem('loltrack_players',JSON.stringify(players.map(p=>({
     gameName:p.gameName,tagLine:p.tagLine,puuid:p.puuid,summonerId:p.summonerId,
     level:p.level,profileIconId:p.profileIconId,soloQ:p.soloQ,flexQ:p.flexQ,role:p.role,champType:p.champType,
-    note:p.note,comment:p.comment,adviceQueue:p.adviceQueue
+    adviceQueue:p.adviceQueue
   }))));}catch(e){}
   try{
     const snap={ts:Date.now(),scores:{}};
@@ -3698,7 +3527,7 @@ function loadPlayers(){
     if(!raw)return;
     const saved=JSON.parse(raw);
     if(!saved||!saved.length)return;
-    saved.forEach(p=>{players.push({...p,matches:[],matchesSolo:[],matchesFlex:[],matchesAram:[],matchesCaos:[],matchesOther:[],
+    saved.forEach(p=>{players.push({...p,matches:[],matchesSolo:[],matchesFlex:[],matchesAram:[],matchesArena:[],matchesCaos:[],matchesOther:[],
       activeTab:'análisis',filterStat:'all',editOpen:false,filterChamp:'',expandedChamp:'',champQFilter:null,dayFilter:'all',
       _ghost:true,updated:null});});
     renderAll();
@@ -3726,6 +3555,8 @@ async function refreshPlayer(idx){
   const p=players[idx];if(!p)return;
   const _rPuuid=p.puuid;
   const count=getCount();
+  // Salir del estado ghost para mostrar el indicador de carga en la card normal
+  if(p._ghost||p._loadFailed){p._ghost=false;p._loadFailed=false;p._loadProgress=1;p._loadLabel='Solo Q';rebuildCard(idx);}
   setLoadProgress(idx,1,'Solo Q');
   const ranked=await rFetch(`https://${PLAT}.api.riotgames.com/lol/league/v4/entries/by-puuid/${_rPuuid}`);
   // Cargar SoloQ primero y mostrar resultado de inmediato
@@ -3861,7 +3692,7 @@ function renderComp(){
       <div style="margin-top:8px;display:inline-block;padding:4px 14px;border-radius:20px;background:${percBg};border:1px solid ${percCol}44">
         <span style="font-size:13px;font-weight:700;font-family:'Orbitron',monospace;color:${percCol}">${perc.pct}</span>
       </div>
-      <div style="font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace;margin-top:5px;cursor:help" title="Benchmark normalizado por rol y elo — no es un percentil real de distribución de jugadores, sino qué tan bien cumple las expectativas de su rango">en su elo · ${sqLabel} ⓘ</div>
+      <div style="font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace;margin-top:5px;cursor:help" title="Benchmark normalizado por rol y elo — mide qué tan bien se cumplen las expectativas del rango en las dimensiones evaluadas">${sqLabel} ⓘ</div>
       <div style="margin-top:10px;height:4px;background:var(--bg4);border-radius:2px"><div style="height:100%;width:${score}%;background:${gd.c};border-radius:2px;transition:width .4s"></div></div>
     </div>`;}).join(''),'rgba(0,229,255,.06)');
   const wrRow=mkRow('WINRATE','',rows.map(({wr,games,s})=>{
@@ -4388,28 +4219,6 @@ async function fetchAllyRanksForChem(idx){
   const top8=Object.entries(allyF).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([puuid])=>puuid).filter(puuid=>!rk[puuid]);
   if(!top8.length){rebuildCard(idx);return;}
   for(const puuid of top8){
-    const [ranked,summ]=await Promise.all([
-      rFetch(`https://${PLAT}.api.riotgames.com/lol/league/v4/entries/by-puuid/${puuid}`),
-      rFetch(`https://${PLAT}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${puuid}`)
-    ]);
-    const soloQ=Array.isArray(ranked)?ranked.find(r=>r.queueType==='RANKED_SOLO_5x5'):null;
-    rk[puuid]={tier:soloQ?.tier||null,rank:soloQ?.rank||null,lp:soloQ?.leaguePoints??null,level:summ?.summonerLevel||null,icon:summ?.profileIconId||null};
-    try{localStorage.setItem('loltrack_ally_ranks',JSON.stringify(rk));}catch(e){}
-  }
-  rebuildCard(idx);
-}
-
-async function fetchNoteRanks(idx){
-  const p=players[idx];if(!p)return;
-  const btn=document.getElementById('fetch-note-ranks-'+idx);
-  if(btn){btn.disabled=true;btn.textContent='⏳ Cargando...';}
-  const rk=(()=>{try{return JSON.parse(localStorage.getItem('loltrack_ally_ranks')||'{}');}catch(e){return{};}})();
-  const puuids=new Set();
-  (p.matches||[]).slice(0,3).forEach(m=>{
-    (m._allies||[]).forEach(a=>{if(a.puuid&&!rk[a.puuid])puuids.add(a.puuid);});
-    (m._enemies||[]).forEach(a=>{if(a.puuid&&!rk[a.puuid])puuids.add(a.puuid);});
-  });
-  for(const puuid of puuids){
     const [ranked,summ]=await Promise.all([
       rFetch(`https://${PLAT}.api.riotgames.com/lol/league/v4/entries/by-puuid/${puuid}`),
       rFetch(`https://${PLAT}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${puuid}`)
