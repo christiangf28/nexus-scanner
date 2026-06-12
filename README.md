@@ -22,24 +22,26 @@
 - **12-week / 1-year history** — track your improvement over time with a score sparkline
 - **Chemistry tab** — see rank distribution of your most frequent teammates
 - **Dark / light mode** — full cyberpunk dark theme and a clean steel-blue light theme
-- **No account required** — bring your own Riot API key, everything runs locally in your browser
+- **No setup required** — the live demo works out of the box; optionally bring your own Riot API key
 
 ![Analysis tab](screen_analysis.png)
 ![Comparison mode](screen_comp.png)
 
 ### How to use
 
-1. Get a [Riot Developer API key](https://developer.riotgames.com/)
-2. Open `lol-tracker.html` directly in your browser — no server, no install
-3. Paste your API key, select your region, and search for a summoner
+1. Open the [live demo](https://christiangf28.github.io/nexus-scanner/) — no key, no account, no install
+2. Select your region and search for a player by Riot ID (`Name#TAG`)
+3. Optional: paste your own [Riot Developer API key](https://developer.riotgames.com/) to use your personal rate limits instead of the shared access
 
 ### Architecture
 
 Single-file HTML application — all CSS and JavaScript are bundled in one `lol-tracker.html` file. This is an intentional design choice: zero dependencies, no build step, fully portable. Open it locally or deploy it to any static host as-is.
 
+API requests are routed through a minimal Cloudflare Worker ([`proxy/worker.js`](proxy/worker.js)) that holds the Riot API key as a server-side secret — the key is never exposed in client code. The proxy only accepts requests from this app's origin and only forwards to the four endpoints listed below. If the user provides their own key, the app calls the Riot API directly instead.
+
 **APIs used:** `account/v1` · `summoner/v4` · `league/v4` · `match/v5`
 
-**Stack:** Vanilla JS · Canvas API · CSS custom properties · localStorage
+**Stack:** Vanilla JS · Canvas API · CSS custom properties · localStorage · Cloudflare Workers
 
 ### Disclaimer
 
@@ -63,21 +65,23 @@ Nexus Scanner was created under Riot Games' "Legal Jibber Jabber" policy using a
 - **Historial de 12 semanas / 1 año** — sigue tu evolución con un gráfico de progreso
 - **Tab Química** — distribución de rangos de tus compañeros más frecuentes
 - **Modo claro / oscuro** — tema oscuro cyberpunk y tema claro azul acero
-- **Sin cuenta** — usa tu propia Riot API key, todo corre localmente en el navegador
+- **Sin configuración** — la demo funciona de inmediato; opcionalmente puedes usar tu propia Riot API key
 
 ### Cómo usar
 
-1. Obtén una [API key de Riot Developer](https://developer.riotgames.com/)
-2. Abre `lol-tracker.html` directamente en tu navegador — sin servidor, sin instalación
-3. Pega tu API key, selecciona tu región y busca un invocador
+1. Abre la [demo en vivo](https://christiangf28.github.io/nexus-scanner/) — sin key, sin cuenta, sin instalación
+2. Selecciona tu región y busca un jugador por Riot ID (`Nombre#TAG`)
+3. Opcional: pega tu propia [API key de Riot Developer](https://developer.riotgames.com/) para usar tus límites personales en vez del acceso compartido
 
 ### Arquitectura
 
 Aplicación HTML de un solo archivo — todo el CSS y JavaScript están en `lol-tracker.html`. Es una decisión de diseño intencional: cero dependencias, sin build, totalmente portable. Ábrelo localmente o súbelo a cualquier host estático tal cual.
 
+Las llamadas a la API pasan por un Cloudflare Worker mínimo ([`proxy/worker.js`](proxy/worker.js)) que guarda la API key de Riot como secreto del lado del servidor — la key nunca se expone en el código cliente. El proxy solo acepta requests desde el origen de esta app y solo reenvía a los cuatro endpoints listados abajo. Si el usuario ingresa su propia key, la app llama a la API de Riot directamente.
+
 **APIs utilizadas:** `account/v1` · `summoner/v4` · `league/v4` · `match/v5`
 
-**Stack:** Vanilla JS · Canvas API · CSS custom properties · localStorage
+**Stack:** Vanilla JS · Canvas API · CSS custom properties · localStorage · Cloudflare Workers
 
 ### Aviso legal
 
