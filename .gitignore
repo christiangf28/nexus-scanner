@@ -3,3 +3,7 @@ package.json
 package-lock.json
 .claude/
 CONTEXT.md
+proxy/key.txt
+proxy/secrets.json
+proxy/.dev.vars
+proxy/.wrangler/

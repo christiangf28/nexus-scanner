@@ -1213,7 +1213,7 @@ textarea:focus{border-color:var(--cyan);}
       <input type="password" id="apiKey" placeholder="RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="flex:1;min-width:200px;box-sizing:border-box;">
       <button type="button" onclick="const i=document.getElementById('apiKey');const show=i.type==='password';i.type=show?'text':'password';this.innerHTML=show?'🙈':'👁'" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:4px;cursor:pointer;font-size:15px;width:36px;height:36px;line-height:1;color:var(--text2);flex-shrink:0;display:flex;align-items:center;justify-content:center" title="Mostrar/ocultar key">👁</button>
     </div>
-    <div class="api-note">
+    <div class="api-note" id="apiNote">
       Obtén tu key gratuita en <a href="https://developer.riotgames.com" target="_blank">developer.riotgames.com</a>
       → iniciar sesión → Development API Key (válida 24h)
     </div>
@@ -1237,7 +1237,7 @@ textarea:focus{border-color:var(--cyan);}
 
   <div class="empty" id="emptyState">
     <div class="empty-icon">⚔</div>
-    <p>Ingresa tu API Key y agrega jugadores<br>por Riot ID para comenzar el análisis</p>
+    <p id="emptyText">Ingresa tu API Key y agrega jugadores<br>por Riot ID para comenzar el análisis</p>
     <p style="font-size:11px;margin-top:8px;letter-spacing:1px;">FORMATO: NOMBRE#TAG</p>
   </div>
 
@@ -1251,6 +1251,10 @@ function setRegion(r){_regionKey=r;try{localStorage.setItem('loltrack_region',r)
 let DDV='14.10.1';
 let players=[];
 const AI_ENABLED=false; // cambiar a true cuando el backend IA esté listo
+// Proxy compartido (Cloudflare Worker en proxy/worker.js) que aporta la API key
+// del proyecto. Con URL configurada, la app funciona sin pedir key al visitante;
+// vacío = cada usuario debe pegar su propia key (comportamiento original).
+const PROXY_URL='https://nexus-proxy.chrisgf.workers.dev';
 let compQueue='auto'; // 'auto'=SoloQ→Flex | 'solo' | 'flex' | 'both'
 function setCompQueue(q){compQueue=q;renderComp();}
 
@@ -1258,6 +1262,13 @@ fetch('https://ddragon.leagueoflegends.com/api/versions.json')
   .then(r=>r.json()).then(v=>{DDV=v[0];}).catch(()=>{});
 window.addEventListener('DOMContentLoaded',()=>{
   setRegion(_regionKey);
+  if(PROXY_URL){
+    document.getElementById('apiNote').innerHTML='Opcional — la app ya incluye acceso a la API de Riot. Pega tu propia key de <a href="https://developer.riotgames.com" target="_blank">developer.riotgames.com</a> solo si prefieres usar tus límites personales.';
+    document.getElementById('apiKey').placeholder='API Key propia (opcional)';
+    document.getElementById('emptyText').innerHTML='Agrega jugadores por Riot ID<br>para comenzar el análisis';
+    document.getElementById('guideKeyStep1').innerHTML='<strong>API Key (opcional)</strong> — la app ya incluye acceso compartido a la API de Riot, no necesitas configurar nada. Si prefieres usar tus propios límites, obtén una key en <a href="https://developer.riotgames.com" target="_blank" style="color:var(--cyan)">developer.riotgames.com</a>.';
+    document.getElementById('guideKeyStep2').innerHTML='<strong>Si pegas tu propia key</strong> en el campo superior, se usa en lugar del acceso compartido y se guarda solo en tu navegador.';
+  }
   const savedKey=localStorage.getItem('loltrack_key');
   if(savedKey)document.getElementById('apiKey').value=savedKey;
   document.getElementById('apiKey').addEventListener('input',e=>{
@@ -1976,31 +1987,41 @@ function showErr(msg){
   el.style.display='block';
   setTimeout(()=>el.style.display='none',6000);
 }
-// Rate limiter: Dev key = 20 req/s + 100 req/2min
-let _rLast=0,_rQueue=Promise.resolve(),_r2min=[];
+// Rate limiter multi-ventana. RATE_WINDOWS debe reflejar el App Rate Limit del
+// portal (developer.riotgames.com/app/841044). Se usa el 85% como margen; los
+// 429 igual se reintentan más abajo como respaldo.
+// Production key (cuando llegue): [{max:500,winMs:10000},{max:30000,winMs:600000}]
+const RATE_WINDOWS=[{max:20,winMs:1000},{max:100,winMs:120000}];
+const _rMaxWin=Math.max(...RATE_WINDOWS.map(w=>w.winMs));
+let _rStamps=[],_rQueue=Promise.resolve();
 function _rFreeze(ms){_rQueue=_rQueue.then(()=>new Promise(r=>setTimeout(r,ms)));}
 async function rFetch(url,_retry){
   const k=getKey();
-  if(!k){showErr('API Key requerida.');return null;}
+  if(!k&&!PROXY_URL){showErr('API Key requerida.');return null;}
   const ticket=_rQueue.then(async()=>{
-    // 20/sec: mínimo 80ms entre requests (~12 req/s, margen real vs límite de 20)
-    const gap=Math.max(0,_rLast+80-Date.now());
-    if(gap>0)await new Promise(r=>setTimeout(r,gap));
-    // 100/2min: frenar a 55 para tener margen amplio
-    const now=Date.now(),cutoff=now-120000;
-    while(_r2min.length&&_r2min[0]<cutoff)_r2min.shift();
-    if(_r2min.length>=55){
-      const hold=_r2min[0]+120000-Date.now()+500;
-      if(hold>0)await new Promise(r=>setTimeout(r,hold));
-      const c2=Date.now()-120000;while(_r2min.length&&_r2min[0]<c2)_r2min.shift();
+    for(;;){
+      const now=Date.now();
+      while(_rStamps.length&&_rStamps[0]<now-_rMaxWin)_rStamps.shift();
+      let hold=0;
+      for(const w of RATE_WINDOWS){
+        const budget=Math.max(1,Math.floor(w.max*0.85));
+        let inWin=0;
+        for(let i=_rStamps.length-1;i>=0&&_rStamps[i]>=now-w.winMs;i--){
+          inWin++;
+          if(inWin>=budget){hold=Math.max(hold,_rStamps[i]+w.winMs-now+200);break;}
+        }
+      }
+      if(hold<=0)break;
+      await new Promise(r=>setTimeout(r,hold));
     }
-    _rLast=Date.now();_r2min.push(_rLast);
+    _rStamps.push(Date.now());
   });
   _rQueue=ticket;
   await ticket;
   try{
-    const r=await fetch(url,{headers:{'X-Riot-Token':k}});
-    if(r.status===401){showErr('API Key inválida o expirada.');return null;}
+    const target=k?url:url.replace(/^https:\/\/([a-z0-9]+)\.api\.riotgames\.com/,PROXY_URL+'/$1');
+    const r=await fetch(target,k?{headers:{'X-Riot-Token':k}}:undefined);
+    if(r.status===401){showErr(k?'API Key inválida o expirada.':'El acceso compartido no está disponible. Pega tu propia API Key arriba.');return null;}
     if(r.status===404){showErr('Jugador no encontrado. Verifica nombre y TAG.');return null;}
     if(r.status===429&&(_retry||0)<3){
       const wait=(parseInt(r.headers.get('Retry-After'))||12)*1000;
@@ -4393,11 +4414,11 @@ async function addAllyFromMatch(gameName, tagLine, btn){
         <div class="guide-section-title">Primeros pasos</div>
         <div class="guide-step">
           <div class="guide-num">1</div>
-          <div class="guide-text"><strong>Obtén tu API Key</strong> en <a href="https://developer.riotgames.com" target="_blank" style="color:var(--cyan)">developer.riotgames.com</a> → iniciar sesión → <em>Development API Key</em>. Expira cada 24h — renuévala en el portal.</div>
+          <div class="guide-text" id="guideKeyStep1"><strong>Obtén tu API Key</strong> en <a href="https://developer.riotgames.com" target="_blank" style="color:var(--cyan)">developer.riotgames.com</a> → iniciar sesión → <em>Development API Key</em>. Expira cada 24h — renuévala en el portal.</div>
         </div>
         <div class="guide-step">
           <div class="guide-num">2</div>
-          <div class="guide-text"><strong>Pégala</strong> en el campo API Key en la parte superior. Se guarda solo para esta sesión.</div>
+          <div class="guide-text" id="guideKeyStep2"><strong>Pégala</strong> en el campo API Key en la parte superior. Se guarda solo para esta sesión.</div>
         </div>
         <div class="guide-step">
           <div class="guide-num">3</div>
