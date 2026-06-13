@@ -40,29 +40,89 @@ function corsHeaders(origin) {
   };
 }
 
+async function notifyDiscord(webhookUrl, title, description, color = 0xe74c3c) {
+  if (!webhookUrl) return;
+  await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      embeds: [{
+        title,
+        description,
+        color,
+        timestamp: new Date().toISOString(),
+      }],
+    }),
+  }).catch(() => {});
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
+
     if (!isAllowedOrigin(origin)) {
+      console.error(`[403] Origen bloqueado: "${origin}" | ${request.method} ${request.url}`);
+      // Sin notificación: origin vacío = bot scanner, ruido constante sin valor
       return new Response('Forbidden', { status: 403 });
     }
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders(origin) });
     }
     if (request.method !== 'GET') {
+      console.error(`[405] Método no permitido: ${request.method} | origin: ${origin}`);
       return new Response('Method not allowed', { status: 405, headers: corsHeaders(origin) });
     }
 
     const url = new URL(request.url);
     const [, host, ...rest] = url.pathname.split('/');
     const path = '/' + rest.join('/');
+
     if (!ALLOWED_HOSTS.has(host) || !ALLOWED_PATHS.some(p => path.startsWith(p))) {
+      console.error(`[403] Endpoint bloqueado: host="${host}" path="${path}" | origin: ${origin}`);
+      // Sin notificación: casi siempre bots intentando usar el proxy para otra cosa
       return new Response('Endpoint no permitido', { status: 403, headers: corsHeaders(origin) });
     }
 
-    const riotRes = await fetch(`https://${host}.api.riotgames.com${path}${url.search}`, {
-      headers: { 'X-Riot-Token': env.RIOT_API_KEY },
-    });
+    let riotRes;
+    try {
+      riotRes = await fetch(`https://${host}.api.riotgames.com${path}${url.search}`, {
+        headers: { 'X-Riot-Token': env.RIOT_API_KEY },
+      });
+    } catch (err) {
+      console.error(`[fetch-error] No se pudo contactar Riot API | ${host}${path} | ${err.message}`);
+      await notifyDiscord(env.DISCORD_WEBHOOK,
+        '🔴 Riot API inalcanzable',
+        `**Endpoint:** \`${host}${path}\`\n**Error:** ${err.message}`
+      );
+      return new Response('Error contacting Riot API', { status: 502, headers: corsHeaders(origin) });
+    }
+
+    if (!riotRes.ok) {
+      const retryAfter = riotRes.headers.get('Retry-After');
+      const detail = `**Endpoint:** \`${host}${path}${url.search}\`` +
+        (retryAfter ? `\n**Retry-After:** ${retryAfter}s` : '') +
+        `\n**Origin:** \`${origin}\``;
+
+      console.error(
+        `[riot-${riotRes.status}] ${host}${path}${url.search}` +
+        (retryAfter ? ` | Retry-After: ${retryAfter}s` : '') +
+        ` | origin: ${origin}`
+      );
+
+      // 429 es frecuente y esperado — avisa pero sin alarmar
+      if (riotRes.status === 429) {
+        await notifyDiscord(env.DISCORD_WEBHOOK,
+          '⚠️ Rate limit (429)',
+          detail,
+          0xf39c12
+        );
+      } else if (riotRes.status >= 500) {
+        await notifyDiscord(env.DISCORD_WEBHOOK,
+          `🔴 Error Riot ${riotRes.status}`,
+          detail
+        );
+      }
+    }
 
     const headers = new Headers(corsHeaders(origin));
     headers.set('Content-Type', riotRes.headers.get('Content-Type') || 'application/json');

@@ -2030,6 +2030,7 @@ async function rFetch(url,_retry){
       return rFetch(url,(_retry||0)+1);
     }
     if(r.status===429){showErr('Rate limit alcanzado. Espera unos segundos.');return null;}
+    if(r.status===502||r.status===503){showErr('Riot API no disponible temporalmente. Intenta en unos segundos.');return null;}
     if(!r.ok){showErr('Error '+r.status+' de la API de Riot.');return null;}
     return r.json();
   }catch(e){showErr('Error de red.');return null;}
