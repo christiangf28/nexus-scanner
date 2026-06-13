@@ -31,10 +31,11 @@ function isAllowedOrigin(origin) {
   return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 }
 
-function corsHeaders(origin) {
+function corsHeaders(origin, allowPost = false) {
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Methods': allowPost ? 'GET, POST, OPTIONS' : 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Expose-Headers': 'Retry-After',
     'Vary': 'Origin',
   };
@@ -65,15 +66,33 @@ export default {
       // Sin notificación: origin vacío = bot scanner, ruido constante sin valor
       return new Response('Forbidden', { status: 403 });
     }
+
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders(origin) });
+      return new Response(null, { status: 204, headers: corsHeaders(origin, true) });
     }
+
+    // Endpoint de reporte de errores del cliente
+    const url = new URL(request.url);
+    if (request.method === 'POST' && url.pathname === '/report-error') {
+      let body = {};
+      try { body = await request.json(); } catch {}
+
+      const stack = (body.stack || '').slice(0, 800);
+      const description =
+        `**Mensaje:** ${body.message || 'desconocido'}\n` +
+        (body.source ? `**Archivo:** \`${body.source}\` L${body.line}:${body.col}\n` : '') +
+        (stack ? `**Stack:**\n\`\`\`\n${stack}\n\`\`\`` : '');
+
+      console.error(`[client-error] ${body.message} | ${body.source}:${body.line}`);
+      await notifyDiscord(env.DISCORD_WEBHOOK, '🐛 Error en el cliente', description, 0x9b59b6);
+      return new Response('ok', { status: 200, headers: corsHeaders(origin, true) });
+    }
+
     if (request.method !== 'GET') {
       console.error(`[405] Método no permitido: ${request.method} | origin: ${origin}`);
       return new Response('Method not allowed', { status: 405, headers: corsHeaders(origin) });
     }
 
-    const url = new URL(request.url);
     const [, host, ...rest] = url.pathname.split('/');
     const path = '/' + rest.join('/');
 
@@ -109,18 +128,10 @@ export default {
         ` | origin: ${origin}`
       );
 
-      // 429 es frecuente y esperado — avisa pero sin alarmar
       if (riotRes.status === 429) {
-        await notifyDiscord(env.DISCORD_WEBHOOK,
-          '⚠️ Rate limit (429)',
-          detail,
-          0xf39c12
-        );
+        await notifyDiscord(env.DISCORD_WEBHOOK, '⚠️ Rate limit (429)', detail, 0xf39c12);
       } else if (riotRes.status >= 500) {
-        await notifyDiscord(env.DISCORD_WEBHOOK,
-          `🔴 Error Riot ${riotRes.status}`,
-          detail
-        );
+        await notifyDiscord(env.DISCORD_WEBHOOK, `🔴 Error Riot ${riotRes.status}`, detail);
       }
     }
 

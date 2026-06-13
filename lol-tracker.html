@@ -1255,6 +1255,23 @@ const AI_ENABLED=false; // cambiar a true cuando el backend IA esté listo
 // del proyecto. Con URL configurada, la app funciona sin pedir key al visitante;
 // vacío = cada usuario debe pegar su propia key (comportamiento original).
 const PROXY_URL='https://nexus-proxy.chrisgf.workers.dev';
+
+// Reporte de errores JS al Worker → Discord
+function _reportClientError(message, source, line, col, stack) {
+  if (!PROXY_URL) return;
+  fetch(`${PROXY_URL}/report-error`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, source, line: line||0, col: col||0, stack: stack||'' }),
+  }).catch(() => {});
+}
+window.onerror = (msg, src, line, col, err) => {
+  _reportClientError(String(msg), src, line, col, err?.stack);
+  return false;
+};
+window.onunhandledrejection = (e) => {
+  _reportClientError(e.reason?.message || String(e.reason), '', 0, 0, e.reason?.stack);
+};
 let compQueue='auto'; // 'auto'=SoloQ→Flex | 'solo' | 'flex' | 'both'
 function setCompQueue(q){compQueue=q;renderComp();}
 
