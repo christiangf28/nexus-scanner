@@ -1202,6 +1202,7 @@ textarea:focus{border-color:var(--cyan);}
     NEXUS SCANNER
   </div>
   <button onclick="document.getElementById('score-info').classList.add('open')" title="Cómo funciona el sistema de puntuación" style="background:none;border:1px solid var(--border);color:var(--cyan);border-radius:6px;padding:5px 11px;cursor:pointer;font-size:14px;font-weight:700;font-family:'Share Tech Mono',monospace;transition:all .2s;margin-left:8px;letter-spacing:.5px" onmouseover="this.style.borderColor='var(--cyan)';this.style.background='rgba(0,229,255,.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='none'">ℹ</button>
+  <button id="langBtn" onclick="setLang(LANG==='es'?'en':'es')" title="Switch language" style="background:none;border:1px solid var(--border);color:var(--text3);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:11px;font-family:'Share Tech Mono',monospace;transition:all .2s;margin-left:8px;letter-spacing:1px">EN</button>
   <button id="themeBtn" onclick="toggleTheme()" title="Cambiar tema" style="background:none;border:1px solid var(--border);color:var(--text3);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:13px;transition:all .2s;margin-left:8px">🌙</button>
 </header>
 
@@ -1239,6 +1240,90 @@ let PLAT=REGIONS[_regionKey].plat,ACCT=REGIONS[_regionKey].acct,MATCH_R=REGIONS[
 function setRegion(r){_regionKey=r;try{localStorage.setItem('loltrack_region',r);}catch(e){}const reg=REGIONS[r]||REGIONS.LAS;PLAT=reg.plat;ACCT=reg.acct;MATCH_R=reg.acct;const t=document.getElementById('serverTag');if(t)t.textContent=r;const sel=document.getElementById('regionSelect');if(sel)sel.value=r;}
 let DDV='14.10.1';
 let players=[];
+let LANG=(()=>{try{return localStorage.getItem('loltrack_lang')||'es';}catch(e){return'es';}})();
+function setLang(l){LANG=l;try{localStorage.setItem('loltrack_lang',l);}catch(e){}const btn=document.getElementById('langBtn');if(btn)btn.textContent=l==='es'?'EN':'ES';_applyLangDOM(l);renderAll();}
+function _applyLangDOM(l){
+  const t=T[l]||T.es;
+  const ab=document.getElementById('addBtn');if(ab&&ab.textContent!==t.addBtnSearch)ab.textContent=t.addBtn;
+  const si=document.getElementById('searchInput');if(si)si.placeholder=t.searchPlaceholder;
+  const et=document.getElementById('emptyText');if(et)et.innerHTML=t.emptyState;
+  // Modal titles
+  const gt=GUIDE_T[l]||GUIDE_T.es;
+  const sit=document.getElementById('score-info-title');if(sit)sit.textContent=gt.scoreInfoTitle;
+  const gmt=document.getElementById('guide-modal-title');if(gmt)gmt.textContent=gt.guideTitle;
+  // Section and card titles via data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(gt[k]!==undefined)el.innerHTML=gt[k];});
+}
+const T={
+  es:{
+    unranked:'Sin rango',ghostMsg:'Sin datos — sesión anterior',apiError:'Error de API — verifica tu API key',loading:'FARMEANDO DATOS...',
+    roles:{TOP:'Top',JUNGLE:'Jungla',MID:'Mid',BOT:'ADC',SUPPORT:'Soporte'},
+    tiers:{IRON:'Hierro',BRONZE:'Bronce',SILVER:'Plata',GOLD:'Oro',PLATINUM:'Platino',EMERALD:'Esmeralda',DIAMOND:'Diamante',MASTER:'Maestro',GRANDMASTER:'Gran Maestro',CHALLENGER:'Retador'},
+    tabs:{análisis:'análisis',stats:'stats',campeones:'campeones',partidas:'partidas',gráficas:'gráficas',química:'química'},
+    addBtn:'+ AGREGAR',addBtnSearch:'BUSCANDO...',searchPlaceholder:'JUGADOR#TAG',
+    editRole:'✏ editar rol',updated:'UPDATED',refreshRanks:'Actualizar ranks',
+    rankQueues:{'SOLO/DUO':'SOLO/DUO','FLEX 5v5':'FLEX 5v5'},
+    statFilters:{solo:'SOLO/DUO',flex:'FLEX',ambos:'AMBOS'},
+    matchFilters:{all:'ALL',solo:'SOLO',flex:'FLEX',aram:'ARAM',arena:'ARENA',caos:'CAOS',win:'WIN',lose:'LOSE'},
+    advTabs:{solo:'SOLO/DUO',flex:'FLEX'},
+    noRanked:'// SIN PARTIDAS RANKEADAS RECIENTES',
+    noResults:'// SIN RESULTADOS',
+    multiRoleEval:'EVALUACIÓN MULTI-ROL',multiRoleMsg:'Múltiples roles detectados',
+    chemNoData:'// Nadie ha jugado lo suficiente contigo en esta cola — o tú con nadie',
+    chemRankNote:'// Rank mostrado para los 15 más frecuentes',
+    refreshing:'Recargando datos...',
+    emptyState:'Ingresa tu API Key y agrega jugadores<br>por Riot ID para comenzar el análisis',
+  },
+  en:{
+    unranked:'Unranked',ghostMsg:'Previous session — no data',apiError:'API error — check your API key',loading:'FARMING DATA...',
+    roles:{TOP:'Top',JUNGLE:'Jungle',MID:'Mid',BOT:'ADC',SUPPORT:'Support'},
+    tiers:{IRON:'Iron',BRONZE:'Bronze',SILVER:'Silver',GOLD:'Gold',PLATINUM:'Platinum',EMERALD:'Emerald',DIAMOND:'Diamond',MASTER:'Master',GRANDMASTER:'Grandmaster',CHALLENGER:'Challenger'},
+    tabs:{análisis:'Analysis',stats:'Stats',campeones:'Champions',partidas:'Matches',gráficas:'Charts',química:'Chemistry'},
+    addBtn:'+ ADD',addBtnSearch:'SEARCHING...',searchPlaceholder:'PLAYER#TAG',
+    editRole:'✏ edit role',updated:'UPDATED',refreshRanks:'Refresh ranks',
+    rankQueues:{'SOLO/DUO':'SOLO/DUO','FLEX 5v5':'FLEX 5v5'},
+    statFilters:{solo:'SOLO/DUO',flex:'FLEX',ambos:'BOTH'},
+    matchFilters:{all:'ALL',solo:'SOLO',flex:'FLEX',aram:'ARAM',arena:'ARENA',caos:'CHAOS',win:'WIN',lose:'LOSE'},
+    advTabs:{solo:'SOLO/DUO',flex:'FLEX'},
+    noRanked:'// NO RECENT RANKED GAMES',
+    noResults:'// NO RESULTS',
+    multiRoleEval:'MULTI-ROLE EVALUATION',multiRoleMsg:'Multiple roles detected',
+    chemNoData:"// Nobody has played enough with you in this queue",
+    chemRankNote:'// Rank shown for the 15 most frequent',
+    refreshing:'Reloading data...',
+    emptyState:'Add players by Riot ID<br>to start the analysis',
+  }
+};
+const GUIDE_T={
+  es:{
+    scoreInfoTitle:'// SISTEMA DE PUNTUACIÓN',guideTitle:'// GUÍA DEL ERUDITO',
+    score0100:'Score 0 – 100',dims:'Dimensiones',eloScale:'Escalado por elo',matchRank:'Rank en partidas',
+    firstSteps:'Primeros pasos',cardTabs:'Pestañas de la card',ratingSystem:'Sistema de valoración vs elo',
+    roleType:'Rol y tipo de campeón',scholarTips:'Consejos del Erudito',usageTips:'Tips de uso',
+    ctAnalysis:'ANÁLISIS',ctStats:'STATS',ctChamps:'CAMPEONES',ctMatches:'PARTIDAS',ctCharts:'GRÁFICAS',ctChem:'QUÍMICA',ctRating:'RATING',
+    ctAnalysisP:'Tab por defecto. Tres sub-pestañas: <strong>Solo/Duo</strong>, <strong>Flex</strong> y <strong>ARAM</strong>. Valoración −1/+1, barras por dimensión (KDA/FARM/VIS/DMG/SURV/KP) y Consejos del Erudito con análisis específico de fallas.',
+    ctStatsP:'KDA, WR y CS/min como datos principales. Incluye racha actual, insignias automáticas (OTP, MVP, CARRY, TILTEADO…) y sparkline de daño. Verde = sobre umbral, rojo = bajo umbral para tu rol.',
+    ctChampsP:'Estadísticas agrupadas por campeón: partidas, WR, KDA y CS/min. Auto-filtra SoloQ o Flex según disponibilidad; puedes cambiarlo manualmente.',
+    ctMatchesP:'Historial con filtros por resultado y rol. Haz click en una partida para expandir aliados y rivales con sus stats — desde ahí puedes agregar cualquier jugador al tracker.',
+    ctChartsP:'Tendencias a lo largo del tiempo: evolución del score, WR por día de la semana y distribución de partidas. Útil para detectar patrones de rendimiento.',
+    ctChemP:'Lista de aliados frecuentes con su rango, icono y nivel. Muestra WR conjunto y cuántas partidas se jugaron en equipo. Los rangos se cargan automáticamente al abrir la pestaña.',
+    ctRatingP:'Califica a un jugador con estrellas (1–5) y escribe un comentario personal. También muestra aliados y rivales de tus últimas 3 partidas para calificarlos rápido.',
+  },
+  en:{
+    scoreInfoTitle:'// SCORING SYSTEM',guideTitle:"// SCHOLAR'S GUIDE",
+    score0100:'Score 0 – 100',dims:'Dimensions',eloScale:'Elo Scaling',matchRank:'Match Rank',
+    firstSteps:'Getting started',cardTabs:'Card tabs',ratingSystem:'Rating system vs elo',
+    roleType:'Role & champion type',scholarTips:"Scholar's Insights",usageTips:'Usage tips',
+    ctAnalysis:'ANALYSIS',ctStats:'STATS',ctChamps:'CHAMPIONS',ctMatches:'MATCHES',ctCharts:'CHARTS',ctChem:'CHEMISTRY',ctRating:'RATING',
+    ctAnalysisP:'Default tab. Three sub-tabs: <strong>Solo/Duo</strong>, <strong>Flex</strong> and <strong>ARAM</strong>. −1/+1 rating, bars per dimension (KDA/FARM/VIS/DMG/SURV/KP) and Scholar\'s Insights with specific failure analysis.',
+    ctStatsP:'KDA, WR and CS/min as main data. Includes current streak, automatic badges (OTP, MVP, CARRY, TILTED…) and damage sparkline. Green = above threshold, red = below threshold for your role.',
+    ctChampsP:'Stats grouped by champion: games, WR, KDA and CS/min. Auto-filters SoloQ or Flex by availability; you can change it manually.',
+    ctMatchesP:'Match history with filters by result and role. Click a match to expand allies and enemies with their stats — from there you can add any player to the tracker.',
+    ctChartsP:'Trends over time: score evolution, WR by day of week, and match distribution. Useful for detecting performance patterns.',
+    ctChemP:'List of frequent allies with their rank, icon and level. Shows combined WR and how many games were played together. Ranks are loaded automatically when opening the tab.',
+    ctRatingP:'Rate a player with stars (1–5) and write a personal note. Also shows allies and enemies from your last 3 games to rate them quickly.',
+  }
+};
 const AI_ENABLED=false; // cambiar a true cuando el backend IA esté listo
 // Proxy compartido (Cloudflare Worker en proxy/worker.js) que aporta la API key
 // del proyecto. Con URL configurada, la app funciona sin pedir key al visitante;
@@ -1323,7 +1408,7 @@ function detectCTFromMatches(matches){
   const ct={};matches.forEach(m=>{const t=detectChampType(m.championName,m.teamPosition);ct[t]=(ct[t]||0)+1;});
   return Object.entries(ct).sort((a,b)=>b[1]-a[1])[0]?.[0]||'Unknown';
 }
-function _roleEs(r){return{TOP:'Top',JUNGLE:'Jungla',MID:'Mid',BOT:'ADC',SUPPORT:'Soporte'}[r]||r;}
+function _roleL(r){return(T[LANG]?.roles||T.es.roles)[r]||r;}
 // Umbrales calibrados a Emerald/Diamond LAS
 // "great" = top 20% del rango, "ok" = promedio aceptable
 // Umbrales calibrados a Diamond LAS
@@ -1342,7 +1427,7 @@ function getTierCol(tier){
   const l={IRON:'#4a4a4a',BRONZE:'#7a2e08',SILVER:'#1e5060',GOLD:'#7a5800',PLATINUM:'#005c3c',EMERALD:'#00481e',DIAMOND:'#0033a0',MASTER:'#5800aa',GRANDMASTER:'#8a0018',CHALLENGER:'#5a4500'};
   return(isLight?l:d)[tier]||'#888';
 }
-function tierEs(t){return{IRON:'Hierro',BRONZE:'Bronce',SILVER:'Plata',GOLD:'Oro',PLATINUM:'Platino',EMERALD:'Esmeralda',DIAMOND:'Diamante',MASTER:'Maestro',GRANDMASTER:'Gran Maestro',CHALLENGER:'Retador'}[t]||t;}
+function tierName(t){return(T[LANG]?.tiers||T.es.tiers)[t]||t;}
 const ROLE_TH={
   TOP:     {kda:{g:4.5,ok:3.0},cs:{g:9.0,ok:7.5},vision:{g:1.17,ok:0.73},dmg:{g:1000,ok:667},gold:{g:500,ok:400},kp:{g:60,ok:45},deaths:{ok:3,bad:5}},
   JUNGLE:  {kda:{g:4.8,ok:3.2},cs:{g:7.0,ok:5.5},vision:{g:1.83,ok:1.17},dmg:{g:833,ok:500},gold:{g:480,ok:370},kp:{g:68,ok:52},deaths:{ok:3,bad:5}},
@@ -1430,10 +1515,10 @@ async function callAIAnalysis(puuid,tipo='general'){
   const tier=aq==='flex'?(p.flexQ?.tier||p.soloQ?.tier):(p.soloQ?.tier||p.flexQ?.tier)||null;
   const rank=aq==='flex'?(p.flexQ?.rank||p.soloQ?.rank):(p.soloQ?.rank||p.flexQ?.rank)||'';
   const lp=aq==='flex'?(p.flexQ?.leaguePoints||0):(p.soloQ?.leaguePoints||0);
-  const tierStr=tier?`${tierEs(tier)} ${rank} ${lp}LP`:'Sin rango';
+  const tierStr=tier?`${tierName(tier)} ${rank} ${lp}LP`:T[LANG].unranked;
   const champCount={};pool.forEach(m=>{champCount[m.championName]=(champCount[m.championName]||0)+1;});
   const topChamps=Object.entries(champCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([c,n])=>`${c}(${n})`).join(', ');
-  const ctx=`JUGADOR: ${p.gameName}#${p.tagLine} | ${_regionKey} | ${tierStr} | Rol: ${_roleEs(role)}
+  const ctx=`JUGADOR: ${p.gameName}#${p.tagLine} | ${_regionKey} | ${tierStr} | Rol: ${_roleL(role)}
 STATS últimas ${pool.length} partidas: WR ${wr}% | KDA ${(s.kda||0).toFixed(2)} | CS/min ${(s.csMin||0).toFixed(2)} | Visión/min ${(s.vision||0).toFixed(2)} | Daño/min ${Math.round(s.dmg||0)} | KP ${Math.round((s.kp||0)*100)}%
 Campeones: ${topChamps}`;
   const preguntas={
@@ -1478,49 +1563,74 @@ function autoSuggest(s,role,ct,tier=null,seed=0){
   const tth=TYPE_TH[ct]||TYPE_TH.Unknown;
   const r=[];
   const pick=(arr,off=0)=>arr[(seed+off)%arr.length];
+  const pick2=(es,en,off=0)=>{const a=LANG==='en'?en:es;return a[(seed+off)%a.length];};
 
   // ── KDA ──
   if(s.kda>=rth.kda.g){
-    r.push({tp:'ok',tx:pick([
-      `🏆 KDA ${s.kda.toFixed(2)} — élite para ${_roleEs(role)}. Cada muerte evitada le niega oro al enemigo. Convierte esas jugadas en objetivos concretos: torre, dragón o barón después de cada kill.`,
-      `🏆 KDA ${s.kda.toFixed(2)} para ${_roleEs(role)} — no te pueden cobrar lo que no te matan. Sigue convirtiendo esa ventaja de vida en objetivos del mapa antes de buscar más peleas.`,
+    r.push({tp:'ok',tx:pick2([
+      `🏆 KDA ${s.kda.toFixed(2)} — élite para ${_roleL(role)}. Cada muerte evitada le niega oro al enemigo. Convierte esas jugadas en objetivos concretos: torre, dragón o barón después de cada kill.`,
+      `🏆 KDA ${s.kda.toFixed(2)} para ${_roleL(role)} — no te pueden cobrar lo que no te matan. Sigue convirtiendo esa ventaja de vida en objetivos del mapa antes de buscar más peleas.`,
       `🏆 KDA ${s.kda.toFixed(2)} — sobrevivir es la habilidad más infravalorada del juego, y la que más LP mueve. Úsala para presionar objetivos mientras el enemigo espera el respawn.`,
+    ],[
+      `🏆 KDA ${s.kda.toFixed(2)} — elite for ${_roleL(role)}. Every avoided death denies the enemy gold. Convert that survival into concrete objectives: tower, dragon, or baron after each kill.`,
+      `🏆 KDA ${s.kda.toFixed(2)} for ${_roleL(role)} — can't get paid for what you don't give them. Keep converting that survival advantage into map objectives before looking for more fights.`,
+      `🏆 KDA ${s.kda.toFixed(2)} — surviving is the most underrated skill in the game, and the one that moves the most LP. Use it to pressure objectives while the enemy respawns.`,
     ])});
   }else if(s.kda>=rth.kda.ok){
     const gap=rth.kda.g-s.kda;
-    r.push({tp:'',tx:pick([
+    r.push({tp:'',tx:pick2([
       `👍 KDA ${s.kda.toFixed(2)} — aceptable, te faltan ${gap.toFixed(2)} puntos al élite. Con ${s.avgDeaths.toFixed(1)} muertes por partida, identifica cuándo mueres más: inicio (trades malos), mitad (sin visión) o final (mala posición en peleas).`,
       `👍 KDA ${s.kda.toFixed(2)} — bien, pero ${s.avgDeaths.toFixed(1)} muertes/partida es exactamente ${s.avgDeaths.toFixed(1)} veces que el rival cobró sin merecerlo. Eliminar la más evitable te acerca ${gap.toFixed(2)} puntos al élite.`,
       `👍 KDA ${s.kda.toFixed(2)} — el salto al élite son ${gap.toFixed(2)} puntos. Cada partida sin morir innecesariamente reduce esa brecha más rápido que cualquier otra mejora.`,
+    ],[
+      `👍 KDA ${s.kda.toFixed(2)} — acceptable, ${gap.toFixed(2)} points short of elite. With ${s.avgDeaths.toFixed(1)} deaths per game, identify when you die most: early (bad trades), mid (no vision), or late (bad positioning).`,
+      `👍 KDA ${s.kda.toFixed(2)} — decent, but ${s.avgDeaths.toFixed(1)} deaths/game is exactly ${s.avgDeaths.toFixed(1)} free payouts to the enemy. Cut the most avoidable one and you're ${gap.toFixed(2)} points closer to elite.`,
+      `👍 KDA ${s.kda.toFixed(2)} — the jump to elite is ${gap.toFixed(2)} points. Every game without an unnecessary death closes that gap faster than anything else.`,
     ],1),goal:`≥${rth.kda.g.toFixed(1)} KDA`});
   }else{
     const ratio=(s.avgKills+s.avgAssists).toFixed(1);
-    r.push({tp:'warn',tx:pick([
+    r.push({tp:'warn',tx:pick2([
       `❌ KDA ${s.kda.toFixed(2)} — ${s.avgDeaths.toFixed(1)} muertes con solo ${ratio} kills+asistencias. Mueres sin generar retorno y le regalas oro al enemigo. No avances en el mapa sin visión activa en el minimapa.`,
       `❌ KDA ${s.kda.toFixed(2)} — morir mal es la forma más efectiva de perder partidas. No la única, pero sí la más evitable. Con ${s.avgDeaths.toFixed(1)} muertes/partida el margen de mejora es real y está en tus manos.`,
       `❌ KDA ${s.kda.toFixed(2)} — el problema no es el campeón. Con ${s.avgDeaths.toFixed(1)} muertes promedio cualquier campeón pierde. Antes de cada muerte hubo una decisión que se pudo tomar distinto.`,
+    ],[
+      `❌ KDA ${s.kda.toFixed(2)} — ${s.avgDeaths.toFixed(1)} deaths with only ${ratio} kills+assists. Dying without returns is just donating gold to the enemy. Don't move on the map without active vision.`,
+      `❌ KDA ${s.kda.toFixed(2)} — dying poorly is the most efficient way to lose games. Not the only way, but the most avoidable. With ${s.avgDeaths.toFixed(1)} deaths/game the room for improvement is real and in your hands.`,
+      `❌ KDA ${s.kda.toFixed(2)} — it's not the champion. With ${s.avgDeaths.toFixed(1)} average deaths any champion loses. Every death was preceded by a decision that could have been made differently.`,
     ],2),goal:`≥${rth.kda.ok.toFixed(1)} KDA`});
   }
 
   // ── Winrate y análisis de cierre ──
   if(s.wr>=55){
-    r.push({tp:'ok',tx:pick([
+    r.push({tp:'ok',tx:pick2([
       `🔥 WR ${s.wr.toFixed(1)}% en ${s.games} partidas — conviertes ventajas consistentemente. Disciplina post-kill: toma la torre o el objetivo disponible antes de buscar más peleas.`,
       `🔥 WR ${s.wr.toFixed(1)}% en ${s.games} partidas — la constancia no es suerte. Estás tomando mejores decisiones que el elo promedio. No cambies lo que funciona.`,
       `🔥 WR ${s.wr.toFixed(1)}% — en ${s.games} partidas eso no es coincidir. El juego te está diciendo que conviertes bien las ventajas que generas.`,
+    ],[
+      `🔥 WR ${s.wr.toFixed(1)}% in ${s.games} games — you convert advantages consistently. Post-kill discipline: take the available tower or objective before looking for more fights.`,
+      `🔥 WR ${s.wr.toFixed(1)}% in ${s.games} games — consistency isn't luck. You're making better decisions than the average elo. Don't change what's working.`,
+      `🔥 WR ${s.wr.toFixed(1)}% — in ${s.games} games that's not coincidence. The game is telling you that you convert advantages well.`,
     ],3)});
   }else if(s.wr>=50){
-    r.push({tp:'',tx:pick([
+    r.push({tp:'',tx:pick2([
       `✅ WR ${s.wr.toFixed(1)}% — positivo pero el margen es justo. ¿Pierdes en mitad de partida por peleas mal tomadas (dragón/barón) o al final por no cerrar? Una causa distinta requiere un fix distinto.`,
       `✅ WR ${s.wr.toFixed(1)}% — un win más que loss por partida. El margen existe pero no aguanta malos hábitos. La diferencia con el siguiente elo está en convertir las ventajas que ya tienes.`,
       `✅ WR ${s.wr.toFixed(1)}% — sobre el 50 es correcto. El techo está en las partidas donde tenías ventaja y no cerraste. Ahí está el LP perdido.`,
+    ],[
+      `✅ WR ${s.wr.toFixed(1)}% — positive but the margin is thin. Are you losing mid-game through bad fights (dragon/baron) or late by not closing? Each cause needs a different fix.`,
+      `✅ WR ${s.wr.toFixed(1)}% — one more win than loss per session. The margin exists but won't survive bad habits. The difference to the next elo is converting advantages you already have.`,
+      `✅ WR ${s.wr.toFixed(1)}% — above 50 is correct. The ceiling is in the games where you had the lead and didn't close. That's where the LP went.`,
     ],4),goal:'≥55% WR'});
   }else{
     const derrDiff=s.losses-s.wins;
-    r.push({tp:'warn',tx:pick([
+    r.push({tp:'warn',tx:pick2([
       `📉 WR ${s.wr.toFixed(1)}% — ${derrDiff} derrota${derrDiff!==1?'s':''} de más. ¿Tus partidas perdidas duran más de 35 min? Si sí → no estás cerrando ventajas. Si no → estás perdiendo carril o peleas tempranas. Trabaja solo un aspecto por sesión.`,
       `📉 WR ${s.wr.toFixed(1)}% — las partidas se pierden más de lo que se ganan. ¿Hay un patrón en cuándo cede el juego? KDA, visión y muertes de esta sesión señalan dónde se rompe.`,
       `📉 WR ${s.wr.toFixed(1)}% en ${s.games} partidas — eso no son rachas, es tendencia. Identifica el fallo que más se repite y trabaja solo ese durante las próximas 5 partidas.`,
+    ],[
+      `📉 WR ${s.wr.toFixed(1)}% — ${derrDiff} extra loss${derrDiff!==1?'es':''}. Are your losses lasting more than 35 min? If yes → you're not closing advantages. If not → you're losing lane or early fights. Work on one thing per session.`,
+      `📉 WR ${s.wr.toFixed(1)}% — losing more than winning. Is there a pattern in when the game slips? KDA, vision and deaths in this panel point to where it breaks.`,
+      `📉 WR ${s.wr.toFixed(1)}% in ${s.games} games — that's not variance, it's a trend. Identify the most repeated mistake and work only on that for the next 5 games.`,
     ],5),goal:'≥50% WR'});
   }
 
@@ -1528,23 +1638,35 @@ function autoSuggest(s,role,ct,tier=null,seed=0){
   if(role!=='SUPPORT'){
     const csTh=tth.cs?{g:Math.min(tth.cs.g,rth.cs.g),ok:Math.min(tth.cs.ok,rth.cs.ok)}:rth.cs;
     if(s.csMin>=csTh.g){
-      r.push({tp:'ok',tx:pick([
-        `💰 Farm ${s.csMin.toFixed(1)} cs/min — excelente para ${_roleEs(role)}. Convierte esa ventaja de items en presencia en objetivos antes de que el enemigo complete los suyos.`,
+      r.push({tp:'ok',tx:pick2([
+        `💰 Farm ${s.csMin.toFixed(1)} cs/min — excelente para ${_roleL(role)}. Convierte esa ventaja de items en presencia en objetivos antes de que el enemigo complete los suyos.`,
         `💰 ${s.csMin.toFixed(1)} cs/min — el farm limpio es el fundamento silencioso. Tus ítems llegaron cuando tenían que llegar, y eso se nota en cada pelea.`,
         `💰 ${s.csMin.toFixed(1)} cs/min — pocas personas en este elo farman así. Esa ventaja de oro se acumula en silencio y se convierte en diferencia de poder real.`,
+      ],[
+        `💰 Farm ${s.csMin.toFixed(1)} cs/min — excellent for ${_roleL(role)}. Convert that item lead into objective presence before the enemy completes theirs.`,
+        `💰 ${s.csMin.toFixed(1)} cs/min — clean farming is the silent foundation. Your items arrived when they needed to, and that shows in every fight.`,
+        `💰 ${s.csMin.toFixed(1)} cs/min — few people at this elo farm like this. That gold advantage accumulates quietly and turns into real power differences.`,
       ],6)});
     }else if(s.csMin>=csTh.ok){
-      r.push({tp:'',tx:pick([
+      r.push({tp:'',tx:pick2([
         `💰 Farm ${s.csMin.toFixed(1)} cs/min — aceptable (élite: ≥${csTh.g}). Estás dejando ~${Math.round((csTh.g-s.csMin)*18*20)} de oro sobre la mesa cada 20 min. Recoge las oleadas bajo la primera torre antes de cada rotación.`,
         `💰 ${s.csMin.toFixed(1)} cs/min — bien, no élite. Las oleadas que pasaron mientras rotabas son ítems que el rival completó antes que tú. Empuja la wave antes de moverte.`,
         `💰 ${s.csMin.toFixed(1)} cs/min — el oro que dejas en el suelo tiene que venir de algún lado. Recoge la oleada más cercana antes de cada reposicionamiento.`,
+      ],[
+        `💰 Farm ${s.csMin.toFixed(1)} cs/min — acceptable (elite: ≥${csTh.g}). You're leaving ~${Math.round((csTh.g-s.csMin)*18*20)} gold on the table every 20 min. Shove the wave under the first tower before each rotation.`,
+        `💰 ${s.csMin.toFixed(1)} cs/min — decent, not elite. The waves you skipped while rotating are items the enemy completed before you. Push the wave first.`,
+        `💰 ${s.csMin.toFixed(1)} cs/min — the gold you leave on the floor has to come from somewhere. Collect the nearest wave before every repositioning.`,
       ],7),goal:`≥${csTh.g.toFixed(1)} cs/min`});
     }else{
       const lostG=Math.round((csTh.ok-s.csMin)*21*20);
-      r.push({tp:'warn',tx:pick([
+      r.push({tp:'warn',tx:pick2([
         `💰 Farm ${s.csMin.toFixed(1)} cs/min — bajo. Son ~${lostG} de oro menos cada 20 min. Empuja la oleada hasta la primera torre antes de moverte; si no puedes, el problema es visión o el emparejamiento, no el farm.`,
         `💰 ${s.csMin.toFixed(1)} cs/min — el farm no es glamoroso pero sí es obligatorio. Cada 10 cs perdidos son 200–300 de oro menos. Limpia la oleada antes de rotar.`,
         `💰 ${s.csMin.toFixed(1)} cs/min — el carril ofreció oro y lo dejaste ahí. Empuja hasta la primera torre antes de cualquier movimiento en el mapa.`,
+      ],[
+        `💰 Farm ${s.csMin.toFixed(1)} cs/min — low. That's ~${lostG} less gold every 20 min. Push the wave to the first tower before moving; if you can't, the problem is vision or the matchup, not the farm.`,
+        `💰 ${s.csMin.toFixed(1)} cs/min — farming isn't glamorous but it is mandatory. Every 10 missed CS is 200-300 less gold. Clear the wave before rotating.`,
+        `💰 ${s.csMin.toFixed(1)} cs/min — the lane offered gold and you left it there. Push to the first tower before any map movement.`,
       ],8),goal:`≥${csTh.ok.toFixed(1)} cs/min`});
     }
   }
@@ -1552,93 +1674,147 @@ function autoSuggest(s,role,ct,tier=null,seed=0){
   // ── Visión ──
   if(role==='SUPPORT'){
     if(s.vision>=rth.vision.g){
-      r.push({tp:'ok',tx:pick([
+      r.push({tp:'ok',tx:pick2([
         `🔮 Visión ${s.vision.toFixed(2)}/min — élite para soporte. Ahora evalúa dónde pones los wards: cubre los accesos al dragón y al barón, no los carriles. Un ward bien puesto vale más que tres en mal lugar.`,
         `🔮 ${s.vision.toFixed(2)} ward/min — excelente control de mapa. El equipo toma decisiones con información real, no con esperanza. Mantén los wards en los accesos a objetivos mayores.`,
         `🔮 ${s.vision.toFixed(2)} ward/min — las sorpresas del enemigo cuestan más cuando el mapa está cubierto. Este nivel de visión gana partidas sin que nadie lo reconozca en el lobby.`,
+      ],[
+        `🔮 Vision ${s.vision.toFixed(2)}/min — elite for support. Now evaluate ward placement: cover dragon and baron accesses, not lanes. One well-placed ward beats three in the wrong spot.`,
+        `🔮 ${s.vision.toFixed(2)} ward/min — excellent map control. The team makes decisions with real information, not hope. Keep wards on major objective approaches.`,
+        `🔮 ${s.vision.toFixed(2)} ward/min — enemy surprises cost more when the map is covered. This vision level wins games without anyone acknowledging it post-game.`,
       ],9)});
     }else if(s.vision>=rth.vision.ok){
       const pct=Math.round((s.vision-rth.vision.ok)/(rth.vision.g-rth.vision.ok)*100);
-      r.push({tp:'ok',tx:pick([
+      r.push({tp:'ok',tx:pick2([
         `🔮 Visión ${s.vision.toFixed(2)}/min — buen control de mapa, ${pct}% del camino al élite. Una control ward extra por vuelta a base en los accesos antes de cada objetivo.`,
         `🔮 ${s.vision.toFixed(2)} ward/min — sobre el promedio. Para el élite: prioriza los accesos al dragón y barón sobre los wards de carril. Cubre donde se decide la partida.`,
         `🔮 ${s.vision.toFixed(2)} ward/min — bien encaminado. Cada control ward en la entrada al objetivo es información que el rival pagará cara.`,
+      ],[
+        `🔮 Vision ${s.vision.toFixed(2)}/min — good map control, ${pct}% of the way to elite. One extra control ward per base on approaches before each objective.`,
+        `🔮 ${s.vision.toFixed(2)} ward/min — above average. For elite: prioritize dragon and baron accesses over lane wards. Cover where the game is decided.`,
+        `🔮 ${s.vision.toFixed(2)} ward/min — on the right track. Every control ward at an objective entrance is information the enemy will pay for.`,
       ],10),goal:`≥${rth.vision.g.toFixed(2)} ward/min`});
     }else{
-      r.push({tp:'warn',tx:pick([
+      r.push({tp:'warn',tx:pick2([
         `🔮 Visión ${s.vision.toFixed(2)}/min — bajo para soporte. Primera vuelta a base → siempre lleva una control ward. Cubre entradas al dragón o al barón, no el carril.`,
         `🔮 ${s.vision.toFixed(2)} ward/min — sin visión, las muertes del equipo no son mala suerte. Cada base con control ward es seguro; sin ella, el rival opera en la oscuridad a tu costa.`,
         `🔮 ${s.vision.toFixed(2)} ward/min — el mapa oscuro le regala información gratis al enemigo. Wardea los accesos a objetivos antes de que se forme la pelea, no después.`,
+      ],[
+        `🔮 Vision ${s.vision.toFixed(2)}/min — low for support. First base → always bring a control ward. Cover dragon or baron entrances, not the lane.`,
+        `🔮 ${s.vision.toFixed(2)} ward/min — without vision, team deaths aren't bad luck. Every base with a control ward is safe; without one, the enemy operates in the dark at your cost.`,
+        `🔮 ${s.vision.toFixed(2)} ward/min — a dark map gives the enemy free information. Ward objective accesses before the fight forms, not after.`,
       ],11),goal:`≥${rth.vision.ok.toFixed(2)} ward/min`});
     }
   }else{
     if(s.vision>=rth.vision.g){
-      r.push({tp:'ok',tx:pick([
-        `👁️ Visión ${s.vision.toFixed(2)}/min — élite para ${_roleEs(role)}. Un control ward por vuelta a base en los accesos de jungla mantiene esa ventaja.`,
-        `👁️ ${s.vision.toFixed(2)}/min — control de mapa sólido para ${_roleEs(role)}. Las emboscadas del rival cuestan más cuando el mapa está cubierto.`,
+      r.push({tp:'ok',tx:pick2([
+        `👁️ Visión ${s.vision.toFixed(2)}/min — élite para ${_roleL(role)}. Un control ward por vuelta a base en los accesos de jungla mantiene esa ventaja.`,
+        `👁️ ${s.vision.toFixed(2)}/min — control de mapa sólido para ${_roleL(role)}. Las emboscadas del rival cuestan más cuando el mapa está cubierto.`,
         `👁️ ${s.vision.toFixed(2)}/min — excelente visión. Cada ojo en el mapa es una muerte que no ocurrió y una que el rival no pudo cobrar.`,
+      ],[
+        `👁️ Vision ${s.vision.toFixed(2)}/min — elite for ${_roleL(role)}. One control ward per base on jungle accesses maintains that advantage.`,
+        `👁️ ${s.vision.toFixed(2)}/min — solid map control for ${_roleL(role)}. Enemy ambushes cost more when the map is covered.`,
+        `👁️ ${s.vision.toFixed(2)}/min — excellent vision. Every eye on the map is a death that didn't happen and one the enemy couldn't cash in on.`,
       ],12)});
     }else if(s.vision>=rth.vision.ok){
-      r.push({tp:'ok',tx:pick([
-        `👁️ Visión ${s.vision.toFixed(2)}/min — sobre el promedio para ${_roleEs(role)}. Para el élite (${rth.vision.g}/min): una control ward en entradas de jungla antes de cada objetivo.`,
-        `👁️ ${s.vision.toFixed(2)}/min — bien para ${_roleEs(role)}. El salto al élite es una control ward más por base dirigida a las entradas de barón/dragón.`,
-        `👁️ ${s.vision.toFixed(2)}/min — correcto para ${_roleEs(role)}. Cada control ward en accesos al objetivo es información que el rival no tiene y tú sí.`,
+      r.push({tp:'ok',tx:pick2([
+        `👁️ Visión ${s.vision.toFixed(2)}/min — sobre el promedio para ${_roleL(role)}. Para el élite (${rth.vision.g}/min): una control ward en entradas de jungla antes de cada objetivo.`,
+        `👁️ ${s.vision.toFixed(2)}/min — bien para ${_roleL(role)}. El salto al élite es una control ward más por base dirigida a las entradas de barón/dragón.`,
+        `👁️ ${s.vision.toFixed(2)}/min — correcto para ${_roleL(role)}. Cada control ward en accesos al objetivo es información que el rival no tiene y tú sí.`,
+      ],[
+        `👁️ Vision ${s.vision.toFixed(2)}/min — above average for ${_roleL(role)}. For elite (${rth.vision.g}/min): one control ward on jungle entries before each objective.`,
+        `👁️ ${s.vision.toFixed(2)}/min — good for ${_roleL(role)}. The jump to elite is one more control ward per base aimed at baron/dragon entrances.`,
+        `👁️ ${s.vision.toFixed(2)}/min — correct for ${_roleL(role)}. Every control ward on an objective access is information you have that the enemy doesn't.`,
       ],13),goal:`≥${rth.vision.g.toFixed(2)} ward/min`});
     }else{
-      r.push({tp:'warn',tx:pick([
-        `👁️ Visión ${s.vision.toFixed(2)}/min — bajo para ${_roleEs(role)}. Cada vuelta a base sin control ward es darle información gratis al enemigo. Tres puntos clave: acceso river bot, river top y arbusto del píxel (mid).`,
+      r.push({tp:'warn',tx:pick2([
+        `👁️ Visión ${s.vision.toFixed(2)}/min — bajo para ${_roleL(role)}. Cada vuelta a base sin control ward es darle información gratis al enemigo. Tres puntos clave: acceso river bot, river top y arbusto del píxel (mid).`,
         `👁️ ${s.vision.toFixed(2)}/min — sin visión, andar por el mapa es confiar en que el enemigo no está ahí. Frecuentemente está ahí. Una control ward por base en accesos de jungla cambia eso.`,
         `👁️ ${s.vision.toFixed(2)}/min — el mapa oscuro no favorece al que avanza. Wardea los accesos a objetivos antes de rotar, no cuando ya estás comprometido.`,
+      ],[
+        `👁️ Vision ${s.vision.toFixed(2)}/min — low for ${_roleL(role)}. Every base without a control ward is giving the enemy free information. Three key spots: river bot access, river top, and the pixel bush (mid).`,
+        `👁️ ${s.vision.toFixed(2)}/min — walking the map without wards means trusting the enemy isn't there. They frequently are. One control ward per base on jungle accesses changes that.`,
+        `👁️ ${s.vision.toFixed(2)}/min — a dark map doesn't favor the one advancing. Ward objective accesses before rotating, not once you're already committed.`,
       ],14),goal:`≥${rth.vision.ok.toFixed(2)} ward/min`});
     }
   }
 
   // ── Muertes ──
   if(s.avgDeaths<=rth.deaths.ok){
-    r.push({tp:'ok',tx:pick([
+    r.push({tp:'ok',tx:pick2([
       `💀 ${s.avgDeaths.toFixed(1)} muertes por partida — muy bien. Cada muerte evitada le niega experiencia y oro al enemigo.`,
       `💀 ${s.avgDeaths.toFixed(1)} muertes/partida — controlado. Mueres poco y el rival no puede construir ventaja de recompensas sobre ti.`,
       `💀 ${s.avgDeaths.toFixed(1)} muertes/partida — excelente supervivencia. Morir poco es la habilidad más subestimada del juego; este número lo demuestra.`,
+    ],[
+      `💀 ${s.avgDeaths.toFixed(1)} deaths per game — good. Every avoided death denies the enemy experience and gold.`,
+      `💀 ${s.avgDeaths.toFixed(1)} deaths/game — controlled. You die rarely and the enemy can't build a bounty advantage over you.`,
+      `💀 ${s.avgDeaths.toFixed(1)} deaths/game — excellent survival. Dying infrequently is the most underrated skill in the game; this number proves it.`,
     ],15)});
   }else if(s.avgDeaths<=rth.deaths.bad){
-    r.push({tp:'warn',tx:pick([
+    r.push({tp:'warn',tx:pick2([
       `💀 ${s.avgDeaths.toFixed(1)} muertes por partida — algo alto. El patrón más común: morir intentando "una jugada más" con la vida baja. Con menos del 30% de vida — vuelve a base. Las jugadas heroicas con poca vida casi nunca valen lo que le das al morir.`,
       `💀 ${s.avgDeaths.toFixed(1)} muertes/partida — uno de más. Identifica en qué fase ocurren más: laning (trade mal calculado), rotaciones (sin visión) o teamfights (mala posición). Cada fase tiene un fix distinto.`,
       `💀 ${s.avgDeaths.toFixed(1)} muertes/partida — en el límite. Cada muerte fue precedida por una decisión. Identifica cuál se repite: trade con vida baja, entrar sin visión, o quedarse un segundo de más en la pelea.`,
-    ],16),goal:`≤${rth.deaths.ok.toFixed(1)} muertes/partida`});
+    ],[
+      `💀 ${s.avgDeaths.toFixed(1)} deaths per game — a bit high. Most common pattern: dying trying "one more play" on low HP. Below 30% HP — back to base. Heroic plays on low health almost never justify what you hand over when you die.`,
+      `💀 ${s.avgDeaths.toFixed(1)} deaths/game — one too many. Identify which phase costs you most: laning (bad trade), rotations (no vision), or teamfights (poor positioning). Each phase has a different fix.`,
+      `💀 ${s.avgDeaths.toFixed(1)} deaths/game — on the edge. Every death was preceded by a decision. Identify which repeats: trading on low HP, engaging without vision, or staying one second too long in the fight.`,
+    ],16),goal:`≤${rth.deaths.ok.toFixed(1)} deaths/game`});
   }else{
     const bounty=Math.round(s.avgDeaths*150);
-    r.push({tp:'warn',tx:pick([
+    r.push({tp:'warn',tx:pick2([
       `💀 ${s.avgDeaths.toFixed(1)} muertes por partida — demasiado. Son ~${bounty} de oro regalados al enemigo por partida. Causa probable: sobre-extenderse o moverse sin visión. Sobrevivir es tu primera prioridad.`,
       `💀 ${s.avgDeaths.toFixed(1)} muertes/partida — a ese ritmo el rival no necesita hacer jugadas brillantes. Necesita que sigas haciendo lo mismo. El cambio más impactante: con menos del 40% de vida, vuelve a base.`,
       `💀 ${s.avgDeaths.toFixed(1)} muertes/partida — cada una es un respawn del rival con gold extra. Antes de "una jugada más" pregúntate: ¿tengo visión activa? ¿tengo más del 40% de vida? Si no a cualquiera, retrocede.`,
-    ],17),goal:`≤${rth.deaths.ok.toFixed(1)} muertes/partida`});
+    ],[
+      `💀 ${s.avgDeaths.toFixed(1)} deaths per game — too many. That's ~${bounty} gold gifted to the enemy per game. Likely cause: overextending or moving without vision. Surviving is your first priority.`,
+      `💀 ${s.avgDeaths.toFixed(1)} deaths/game — at that rate the enemy doesn't need brilliant plays. They just need you to keep doing the same thing. Biggest change: below 40% HP, back to base.`,
+      `💀 ${s.avgDeaths.toFixed(1)} deaths/game — each one is the enemy respawning with extra gold. Before "one more play" ask: do I have active vision? Am I above 40% HP? If no to either, retreat.`,
+    ],17),goal:`≤${rth.deaths.ok.toFixed(1)} deaths/game`});
   }
 
   // ── KP (Jungle/Support/BOT/TOP/MID) ──
   if(role==='JUNGLE'||role==='SUPPORT'||role==='BOT'||role==='TOP'||role==='MID'){
     const kpTh=rth.kp||{g:65,ok:50};
-    const _kpHigh=[
+    const _kpHighEs=[
       {JUNGLE:'Estás en cada pelea. Siguiente nivel: llega antes de que empiece, no a rescatar lo que ya se perdió.',SUPPORT:'Presencia perfecta. Asegúrate de que tus engages estén coordinados con el ADC, no solo como reacción.',BOT:'Llegas a todas las peleas. El siguiente paso: posicionarte para hacer daño ANTES de entrar, no al mismo tiempo.',TOP:'Uso de TP excelente. Prioriza flancos en dragón/barón antes que el split push cuando el equipo necesita números.',MID:'En cada pelea. Tu valor es el daño constante: llega, haz daño y retrocede antes del siguiente engage.'},
       {JUNGLE:'KP élite. Cada ganko tuyo generó presión real; convierte esa presencia en objetivos antes de buscar más peleas.',SUPPORT:'Tu KP refleja que el equipo peleó con ventaja. Mantén esa presencia en los objetivos, no solo en los intercambios.',BOT:'Alta participación para ADC. Las peleas donde estás presente generan objetivos; las que te pierdes, no.',TOP:'Excelente macro. Ese TP bien ejecutado vale más LP que el split push solitario.',MID:'KP élite para mid. Cada roam tuyo creó presión que el rival tuvo que contestar, o pagó el precio.'},
       {JUNGLE:'En todas las peleas importantes. Ahora prioriza: ¿generas el engage o explotas el que crea el equipo? Elige el rol y ejecuta.',SUPPORT:'Omnipresente. El equipo peleó con visión y con cuerpo. Mantén el engage coordinado — no reactivo.',BOT:'Participación alta para ADC. Esa presencia en mid game es la diferencia entre objetivos tomados y objetivos perdidos.',TOP:'Split push con TP consciente. Este KP demuestra que no sacrificas la macro para quedarte en el carril.',MID:'Alta participación. Roam temprano y presencia en objetivos — eso es lo que gana partidas desde el mid.'},
     ];
-    const _kpMed=[
+    const _kpHighEn=[
+      {JUNGLE:"You're in every fight. Next level: arrive before it starts, not to rescue what's already lost.",SUPPORT:'Perfect presence. Make sure your engages are coordinated with the ADC, not just reactive.',BOT:'You show up to every fight. Next step: position to deal damage BEFORE entering, not at the same time.',TOP:'Excellent TP usage. Prioritize flanks at dragon/baron over split push when the team needs numbers.',MID:'In every fight. Your value is consistent damage: arrive, deal damage, and retreat before the next engage.'},
+      {JUNGLE:'Elite KP. Every gank you made created real pressure; convert that presence into objectives before looking for more fights.',SUPPORT:'Your KP reflects the team fought with an advantage. Keep that presence at objectives, not just skirmishes.',BOT:'High participation for ADC. Fights where you show up generate objectives; the ones you miss, don\'t.',TOP:'Excellent macro. A well-executed TP is worth more LP than solo split push.',MID:'Elite KP for mid. Every roam you made created pressure the enemy had to answer — or paid the price.'},
+      {JUNGLE:'In every important fight. Now prioritize: are you generating the engage or exploiting what the team creates? Pick a role and execute.',SUPPORT:'Omnipresent. The team fought with vision and a body. Keep engages coordinated — not reactive.',BOT:'High ADC participation. That mid-game presence is the difference between objectives taken and objectives lost.',TOP:'Split push with TP awareness. This KP proves you\'re not sacrificing macro to stay in lane.',MID:'High participation. Early roams and objective presence — that\'s what wins games from mid.'},
+    ];
+    const _kpMedEs=[
       {JUNGLE:'Gankea el carril con más CC o con ventaja de vida — no el que pide con el 30% de vida restante.',SUPPORT:'Sigue el minimapa: muévete al carril donde se está formando una pelea, no donde ya terminó.',BOT:'En mitad de partida agrúpate para disputar el dragón y torres en vez de seguir farmeando los carriles laterales.',TOP:'Usa el TP con anticipación: cuando veas una pelea en bot (dragón, torre), teletranspórtate al flanco. No esperes que te pidan.',MID:'Rota al carril inferior después de empujar tu oleada post-6. Con prioridad de carril esa es la ventana para roamear.'},
       {JUNGLE:'Gankea con frecuencia los carriles donde hay CC aliado. Un ganko productivo vale más que dos campamentos.',SUPPORT:'El siguiente paso: anticípate al objetivo — llega al dragón/barón antes de que empiece la pelea, no cuando ya está comprometida.',BOT:'El ADC que sigue en carril lateral mientras el equipo pelea el dragón le regala el objetivo al rival.',TOP:'El TP en flanco al dragón es más valioso que el split push cuando hay pelea activa. Lee el minimapa antes de comprometerte.',MID:'Empuja la oleada y rota. Con prioridad de carril, el mid tiene la rotación más rápida a bot para presionar torre y dragón.'},
       {JUNGLE:'Prioriza campamentos cerca de los carriles con ventaja. El jungla que gankea donde ya se gana multiplica la ventaja.',SUPPORT:'Muévete al objetivo antes de que el equipo lo conteste. Llegar segundo a la pelea le da al rival el control del inicio.',BOT:'La transición a mid game requiere soltar el carril lateral y agruparse. El ADC que llega a todas las peleas del equipo sube de elo.',TOP:'El TP proactivo (flanco en dragon/baron) vale más que el reactivo (llegar cuando ya perdiste). Lee el minimapa antes de comprometerte.',MID:'Roam después de cada push. Con wave en torre enemiga tienes 15–20 segundos para aparecer en bot y crear ventaja 3v2.'},
     ];
-    const _kpLow=[
+    const _kpMedEn=[
+      {JUNGLE:'Gank the lane with the most CC or health advantage — not the one asking for help at 30% HP.',SUPPORT:'Follow the minimap: move to the lane where a fight is forming, not where it already ended.',BOT:'Mid game, group up to contest dragon and towers instead of continuing to farm side lanes.',TOP:'Use TP proactively: when you see a fight in bot (dragon, tower), teleport to the flank. Don\'t wait to be asked.',MID:'Rotate to the bottom lane after pushing your wave post-6. With lane priority, that\'s the window to roam.'},
+      {JUNGLE:'Frequently gank lanes with allied CC. One productive gank is worth more than two camps.',SUPPORT:'Next step: anticipate the objective — arrive at dragon/baron before the fight starts, not once it\'s already committed.',BOT:'The ADC who stays in the side lane while the team fights dragon gifts the objective to the enemy.',TOP:'TP flank at dragon is more valuable than split push when there\'s an active fight. Read the minimap before committing.',MID:'Push the wave and rotate. With lane priority, mid has the fastest rotation to bot to pressure tower and dragon.'},
+      {JUNGLE:'Prioritize camps near winning lanes. The jungler who ganks where they\'re already winning multiplies the advantage.',SUPPORT:'Move to the objective before the team contests it. Arriving second to the fight hands the enemy control of the start.',BOT:'Mid game transition requires leaving the side lane and grouping. The ADC who shows up to every team fight climbs elo.',TOP:'Proactive TP (flank at dragon/baron) is worth more than reactive TP (arriving after you\'ve already lost). Read the minimap.',MID:'Roam after every push. With wave at the enemy tower you have 15–20 seconds to appear in bot and create a 3v2 advantage.'},
+    ];
+    const _kpLowEs=[
       {JUNGLE:'Sigues farmeando la jungla después del minuto 10. Deja el último campamento cerca del carril más activo y dirígete a esa pelea.',SUPPORT:'Estás wardeando lejos de las peleas activas. Si ves 3 o más pings en el minimapa, muévete ahora — el ward puede esperar.',BOT:'Tu equipo pelea sin ti en la mitad de la partida. Agrúpate para el dragón y el barón aunque pierdas el 1v1 en el carril lateral.',TOP:'Split push excesivo. Cada vez que tu equipo pelea sin ventaja numérica, evalúa si tu TP puede cambiar el resultado.',MID:'Muy centrado en tu carril. Empuja la oleada hasta la primera torre y rota: el mid que solo farmea le da ventaja numérica al equipo enemigo.'},
       {JUNGLE:'KP bajo indica que farmeas la jungla mientras el mapa decide la partida. Después del minuto 8, cada campamento en vez de ganko es una oportunidad de ventaja que el rival usará.',SUPPORT:'El soporte que wardea lejos de la pelea activa deja al equipo sin cuerpo en los combates. Presencia primero, visión después.',BOT:'El ADC que farmea el carril lateral mientras el equipo pierde el barón perdió la partida sin saberlo. La transición a mid game requiere agruparse.',TOP:'Split push solo funciona con presión real. Con este KP, el equipo perdió peleas 4v5 que un TP tuyo habría equilibrado.',MID:'El mid que solo farmea le regala ventaja numérica al rival en cada teamfight. Empuja y rota — es la mecánica más impactante del rol.'},
       {JUNGLE:'El jungla que no aparece después del minuto 10 le da libertad total al jungla rival. Tu presencia disuade — tu ausencia permite.',SUPPORT:'Wardeando en silencio mientras el equipo muere es el patrón de un soporte con buen mapa pero bajo impacto. Presencia primero, visión después.',BOT:'Cada pelea de dragón o torre que el equipo pierde 4v5 es LP que sale de tu bolsillo. Mid game sin el ADC es el escenario ideal para el rival.',TOP:'El TP no es botón de emergencia, es herramienta de impacto. Con este KP, cada partida fue una serie de peleas ganadas o perdidas sin tu número.',MID:'El mid tiene la posición más central del mapa por una razón: puede llegar a ambos carriles. Con este KP, esa ventaja posicional no se está usando.'},
     ];
+    const _kpLowEn=[
+      {JUNGLE:'You\'re still farming jungle after minute 10. Drop the last camp near the most active lane and head to that fight.',SUPPORT:'You\'re warding away from active fights. If you see 3+ pings on the minimap, move now — the ward can wait.',BOT:'Your team fights without you in mid game. Group for dragon and baron even if it means losing a side lane 1v1.',TOP:'Excessive split push. Every time your team fights without numerical advantage, evaluate whether your TP can change the outcome.',MID:'Too lane-focused. Push the wave to the first tower and rotate: the mid who only farms gives the enemy team a numbers advantage.'},
+      {JUNGLE:'Low KP means you\'re farming jungle while the map decides the game. After minute 8, every camp instead of a gank is an advantage opportunity the enemy will use.',SUPPORT:'The support who wards away from active fights leaves the team without a body in combat. Presence first, vision second.',BOT:'The ADC who farms the side lane while the team loses baron lost the game without knowing it. Mid-game transition requires grouping.',TOP:'Split push only works with real pressure. With this KP, the team lost 4v5 fights that your TP would have equalized.',MID:'The mid who only farms gifts the enemy team a numbers advantage in every teamfight. Push and rotate — it\'s the highest-impact mechanic of the role.'},
+      {JUNGLE:'The jungler who doesn\'t appear after minute 10 gives the enemy jungler total freedom. Your presence deters — your absence permits.',SUPPORT:'Warding silently while the team dies is the pattern of a support with good map reading but low impact. Presence first, vision second.',BOT:'Every dragon or tower fight the team loses 4v5 is LP coming out of your pocket. Mid game without the ADC is the ideal scenario for the enemy.',TOP:'TP isn\'t an emergency button, it\'s an impact tool. With this KP, every game was a series of fights won or lost without your number.',MID:'Mid has the most central position on the map for a reason: it can reach both lanes. With this KP, that positional advantage isn\'t being used.'},
+    ];
+    const _kpHigh=LANG==='en'?_kpHighEn:_kpHighEs;
+    const _kpMed=LANG==='en'?_kpMedEn:_kpMedEs;
+    const _kpLow=LANG==='en'?_kpLowEn:_kpLowEs;
     if(s.kp>=kpTh.g){
-      r.push({tp:'ok',tx:`🤝 KP ${Math.round(s.kp)}% — participación élite para ${_roleEs(role)}. ${pick(_kpHigh)[role]||''}`});
+      r.push({tp:'ok',tx:`🤝 KP ${Math.round(s.kp)}% — ${LANG==='en'?`elite participation for ${_roleL(role)}`:`participación élite para ${_roleL(role)}`}. ${pick(_kpHigh)[role]||''}`});
     }else if(s.kp>=kpTh.ok){
-      r.push({tp:'',tx:`🤝 KP ${Math.round(s.kp)}% — aceptable para ${_roleEs(role)} (élite: ≥${kpTh.g}%). ${pick(_kpMed,1)[role]||''}`,goal:`≥${kpTh.g}% KP`});
+      r.push({tp:'',tx:`🤝 KP ${Math.round(s.kp)}% — ${LANG==='en'?`acceptable for ${_roleL(role)} (elite: ≥${kpTh.g}%)`:`aceptable para ${_roleL(role)} (élite: ≥${kpTh.g}%)`}. ${pick(_kpMed,1)[role]||''}`,goal:`≥${kpTh.g}% KP`});
     }else{
-      r.push({tp:'warn',tx:`🤝 KP ${Math.round(s.kp)}% — bajo para ${_roleEs(role)}. ${pick(_kpLow,2)[role]||''}`,goal:`≥${kpTh.ok}% KP`});
+      r.push({tp:'warn',tx:`🤝 KP ${Math.round(s.kp)}% — ${LANG==='en'?`low for ${_roleL(role)}`:`bajo para ${_roleL(role)}`}. ${pick(_kpLow,2)[role]||''}`,goal:`≥${kpTh.ok}% KP`});
     }
   }
 
@@ -1650,49 +1826,77 @@ function autoSuggest(s,role,ct,tier=null,seed=0){
     const tankG=tth.dtaken?.g||30000;
     const ccG=tth.cc?.g||50;
     if(tanked>=tankG){
-      r.push({tp:'ok',tx:pick([
+      r.push({tp:'ok',tx:pick2([
         `🛡️ Absorbes ${Math.round(tanked)} daño/min — frontline efectivo. Posiciónate siempre al frente en las peleas para que tu equipo de daño pueda actuar detrás de ti.`,
         `🛡️ ${Math.round(tanked)} daño absorbido/min — tank que cumple. El equipo pudo operar porque tú ocupabas al rival. Mantén esa presencia al frente en cada fight.`,
         `🛡️ ${Math.round(tanked)} daño/min absorbido — frontline real. Absorber impacto libera a los carries para ejecutar sin presión encima.`,
+      ],[
+        `🛡️ You absorb ${Math.round(tanked)} dmg/min — effective frontline. Always position at the front in fights so your damage dealers can act behind you.`,
+        `🛡️ ${Math.round(tanked)} dmg absorbed/min — tank delivering. The team could operate because you occupied the enemy. Keep that front presence in every fight.`,
+        `🛡️ ${Math.round(tanked)} dmg/min absorbed — real frontline. Absorbing impact frees the carries to execute without pressure on them.`,
       ],18)});
     }else{
-      r.push({tp:'warn',tx:pick([
+      r.push({tp:'warn',tx:pick2([
         `🛡️ Solo ${Math.round(tanked)} daño/min absorbido — poco para un tank. Ponte al frente en cada pelea de equipo: si no recibes daño, no estás cumpliendo el rol de frontline.`,
         `🛡️ ${Math.round(tanked)} daño/min — por debajo del esperado. El tank que no inicia no libera a los carries. Entra primero, aguanta, deja que el equipo actúe.`,
         `🛡️ ${Math.round(tanked)} daño absorbido/min — el frontline que no recibe daño no está en posición. Entra primero en cada fight; si el rival dispara a ti en vez de a los carries, ganaste el intercambio.`,
-      ],19),goal:`≥${tankG} daño abs/min`});
+      ],[
+        `🛡️ Only ${Math.round(tanked)} dmg/min absorbed — low for a tank. Get to the front in every team fight: if you're not taking damage, you're not fulfilling the frontline role.`,
+        `🛡️ ${Math.round(tanked)} dmg/min — below expected. The tank that doesn't initiate doesn't free the carries. Go in first, hold on, let the team act.`,
+        `🛡️ ${Math.round(tanked)} dmg absorbed/min — the frontline that doesn't take damage isn't in position. Enter first in every fight; if the enemy shoots at you instead of the carries, you won that exchange.`,
+      ],19),goal:`≥${tankG} dmg abs/min`});
     }
     if(s.avgCC>=ccG){
-      r.push({tp:'ok',tx:pick([
+      r.push({tp:'ok',tx:pick2([
         `🔗 CC ${s.avgCC.toFixed(1)}s/min — excelente control para tank. Tu equipo puede reaccionar con seguridad a tus engages.`,
         `🔗 ${s.avgCC.toFixed(1)}s CC/min — control de élite. Cada segundo de stun es una ventana donde el equipo hace daño sin riesgo. Sigue dirigiéndolo a los carries enemigos.`,
         `🔗 ${s.avgCC.toFixed(1)}s CC/min — el control que crea los engages que ganan teamfights. Prioriza el CC sobre los carries fuera de posición.`,
+      ],[
+        `🔗 CC ${s.avgCC.toFixed(1)}s/min — excellent control for a tank. Your team can safely react to your engages.`,
+        `🔗 ${s.avgCC.toFixed(1)}s CC/min — elite control. Every second of CC is a window where the team deals damage risk-free. Keep directing it at enemy carries.`,
+        `🔗 ${s.avgCC.toFixed(1)}s CC/min — the control that creates the engages that win teamfights. Prioritize CC on carries out of position.`,
       ],20)});
     }else{
-      r.push({tp:'warn',tx:pick([
+      r.push({tp:'warn',tx:pick2([
         `🔗 CC ${s.avgCC.toFixed(1)}s/min — bajo para tank. El CC más valioso cae sobre los personajes de daño del enemigo cuando están fuera de posición, no sobre sus tanques.`,
         `🔗 ${s.avgCC.toFixed(1)}s CC/min — el control es el arma principal de un tank de engage. Prioriza tus habilidades de CC sobre los carries enemigos en cada teamfight.`,
         `🔗 ${s.avgCC.toFixed(1)}s CC/min — el tank sin CC es un saco de golpes sin impacto. Enfoca cada stun en el carry fuera de posición — eso es lo que gana fights.`,
+      ],[
+        `🔗 CC ${s.avgCC.toFixed(1)}s/min — low for a tank. The most valuable CC lands on the enemy damage dealers when they're out of position, not on their tanks.`,
+        `🔗 ${s.avgCC.toFixed(1)}s CC/min — CC is an engage tank's main weapon. Prioritize your CC abilities on enemy carries in every teamfight.`,
+        `🔗 ${s.avgCC.toFixed(1)}s CC/min — a tank without impactful CC is a punching bag with no payoff. Focus every stun on the carry out of position — that's what wins fights.`,
       ],21),goal:`≥${ccG}s CC/min`});
     }
   }else{
     if(s.dmg>=dmgTh.g){
-      r.push({tp:'ok',tx:pick([
-        `⚔️ Daño ${Math.round(s.dmg)}/min — eres una amenaza constante para ${_roleEs(role)}. Mantén posición segura entre ráfagas — no te expongas por una kill extra.`,
-        `⚔️ ${Math.round(s.dmg)}/min — daño élite para ${_roleEs(role)}. El equipo contrario tuvo que responderte, y eso crea espacio para los aliados. No te expongas por una kill de confirmación.`,
-        `⚔️ ${Math.round(s.dmg)}/min — hiciste el trabajo que se esperaba del ${_roleEs(role)}. Alta presión de daño sostenida es lo que obliga al rival a modificar su posicionamiento.`,
+      r.push({tp:'ok',tx:pick2([
+        `⚔️ Daño ${Math.round(s.dmg)}/min — eres una amenaza constante para ${_roleL(role)}. Mantén posición segura entre ráfagas — no te expongas por una kill extra.`,
+        `⚔️ ${Math.round(s.dmg)}/min — daño élite para ${_roleL(role)}. El equipo contrario tuvo que responderte, y eso crea espacio para los aliados. No te expongas por una kill de confirmación.`,
+        `⚔️ ${Math.round(s.dmg)}/min — hiciste el trabajo que se esperaba del ${_roleL(role)}. Alta presión de daño sostenida es lo que obliga al rival a modificar su posicionamiento.`,
+      ],[
+        `⚔️ Damage ${Math.round(s.dmg)}/min — you're a constant threat as ${_roleL(role)}. Maintain safe positioning between bursts — don't expose yourself for an extra kill.`,
+        `⚔️ ${Math.round(s.dmg)}/min — elite damage for ${_roleL(role)}. The enemy team had to respond to you, which creates space for allies. Don't expose yourself for a kill confirmation.`,
+        `⚔️ ${Math.round(s.dmg)}/min — you did what was expected of a ${_roleL(role)}. High sustained damage pressure is what forces the enemy to change their positioning.`,
       ],22)});
     }else if(s.dmg<dmgTh.ok){
-      r.push({tp:'warn',tx:pick([
-        `⚔️ Daño ${Math.round(s.dmg)}/min — bajo para ${_roleEs(role)}. ¿Haces más daño en las victorias? Si sí, el problema es que mueres antes de aprovechar las peleas, no el build.`,
-        `⚔️ ${Math.round(s.dmg)}/min — por debajo del umbral para ${_roleEs(role)}. El daño que no hiciste lo absorbió alguien del equipo con su vida. ¿Llegaste tarde o no pudiste posicionarte?`,
+      r.push({tp:'warn',tx:pick2([
+        `⚔️ Daño ${Math.round(s.dmg)}/min — bajo para ${_roleL(role)}. ¿Haces más daño en las victorias? Si sí, el problema es que mueres antes de aprovechar las peleas, no el build.`,
+        `⚔️ ${Math.round(s.dmg)}/min — por debajo del umbral para ${_roleL(role)}. El daño que no hiciste lo absorbió alguien del equipo con su vida. ¿Llegaste tarde o no pudiste posicionarte?`,
         `⚔️ ${Math.round(s.dmg)}/min — el ${role} sin presión de daño es invisible para el rival, y no de la buena manera. Prioriza el posicionamiento que te deja hacer daño sostenido.`,
+      ],[
+        `⚔️ Damage ${Math.round(s.dmg)}/min — low for ${_roleL(role)}. Do you deal more damage in wins? If yes, the problem is dying before cashing in on fights, not the build.`,
+        `⚔️ ${Math.round(s.dmg)}/min — below threshold for ${_roleL(role)}. The damage you didn't deal was absorbed by a teammate's health bar. Did you arrive late or couldn't position?`,
+        `⚔️ ${Math.round(s.dmg)}/min — a ${_roleL(role)} without damage pressure is invisible to the enemy, and not in a good way. Prioritize positioning that lets you deal sustained damage.`,
       ],23),goal:`≥${Math.round(dmgTh.ok)} dmg/min`});
     }else{
-      r.push({tp:'',tx:pick([
-        `⚔️ Daño ${Math.round(s.dmg)}/min — rango aceptable para ${_roleEs(role)}. Para el élite (${Math.round(dmgTh.g)}/min): prioriza los personajes sin escudo del enemigo y usa los activos de tus items.`,
-        `⚔️ ${Math.round(s.dmg)}/min — correcto para ${_roleEs(role)}. El salto al élite viene de elegir mejor los objetivos: primero los carries sin escudo, luego los activos de ítems en el engage.`,
+      r.push({tp:'',tx:pick2([
+        `⚔️ Daño ${Math.round(s.dmg)}/min — rango aceptable para ${_roleL(role)}. Para el élite (${Math.round(dmgTh.g)}/min): prioriza los personajes sin escudo del enemigo y usa los activos de tus items.`,
+        `⚔️ ${Math.round(s.dmg)}/min — correcto para ${_roleL(role)}. El salto al élite viene de elegir mejor los objetivos: primero los carries sin escudo, luego los activos de ítems en el engage.`,
         `⚔️ ${Math.round(s.dmg)}/min — bien, no élite. El daño a los carries enemigos es más valioso que al frontline: elimina la amenaza antes de que elimine al equipo.`,
+      ],[
+        `⚔️ Damage ${Math.round(s.dmg)}/min — acceptable range for ${_roleL(role)}. For elite (${Math.round(dmgTh.g)}/min): prioritize unshielded enemy champions and use your item actives.`,
+        `⚔️ ${Math.round(s.dmg)}/min — correct for ${_roleL(role)}. The jump to elite comes from better target selection: shieldless carries first, then item actives on the engage.`,
+        `⚔️ ${Math.round(s.dmg)}/min — good, not elite. Damage to enemy carries is more valuable than to their frontline: eliminate the threat before it eliminates the team.`,
       ],24),goal:`≥${Math.round(dmgTh.g)} dmg/min`});
     }
   }
@@ -1700,17 +1904,25 @@ function autoSuggest(s,role,ct,tier=null,seed=0){
   // ── Oro ──
   const goldOk=rth.gold?.ok||300,goldG=rth.gold?.g||420;
   if(s.goldMin>=goldG){
-    r.push({tp:'ok',tx:pick([
+    r.push({tp:'ok',tx:pick2([
       `💛 ${Math.round(s.goldMin)} oro/min — eficiencia de recursos élite. Usa esa ventaja de items para presionar objetivos antes de que el enemigo complete los suyos.`,
       `💛 ${Math.round(s.goldMin)} oro/min — generación de recursos de élite. Esa diferencia de ítems en peleas tempranas es la que decide quién aguanta más.`,
       `💛 ${Math.round(s.goldMin)} oro/min — los ítems llegan cuando tienen que llegar, y eso se convierte en ventaja de poder en cada pelea relevante.`,
+    ],[
+      `💛 ${Math.round(s.goldMin)} gold/min — elite resource efficiency. Use that item advantage to pressure objectives before the enemy completes theirs.`,
+      `💛 ${Math.round(s.goldMin)} gold/min — elite resource generation. That item difference in early fights is what decides who lasts longer.`,
+      `💛 ${Math.round(s.goldMin)} gold/min — items arrive when they're supposed to, and that translates into power spikes in every relevant fight.`,
     ],25)});
   }else if(s.goldMin<goldOk){
-    r.push({tp:'warn',tx:pick([
+    r.push({tp:'warn',tx:pick2([
       `💛 ${Math.round(s.goldMin)} oro/min — bajo. Limpia la oleada más cercana entre peleas antes de reposicionarte. Morir también reduce tus ganancias de oro.`,
       `💛 ${Math.round(s.goldMin)} oro/min — menos oro = ítems más lentos = menor impacto en peleas. La forma más rápida de subir este número: limpiar oleadas entre rotaciones.`,
       `💛 ${Math.round(s.goldMin)} oro/min — el oro que no generas no lo perdonan las peleas. Farm entre objetivos, recoge las oleadas bajo torre, y muere menos (cada muerte corta el flujo de gold).`,
-    ],26),goal:`≥${goldOk} oro/min`});
+    ],[
+      `💛 ${Math.round(s.goldMin)} gold/min — low. Clear the nearest wave between fights before repositioning. Dying also cuts your gold income.`,
+      `💛 ${Math.round(s.goldMin)} gold/min — less gold = slower items = less fight impact. Fastest way to raise this number: clear waves between rotations.`,
+      `💛 ${Math.round(s.goldMin)} gold/min — the gold you don't generate doesn't forgive itself in fights. Farm between objectives, collect waves under tower, and die less (every death cuts gold flow).`,
+    ],26),goal:`≥${goldOk} gold/min`});
   }
 
   // ── Daño a objetivos ──
@@ -1718,16 +1930,24 @@ function autoSuggest(s,role,ct,tier=null,seed=0){
     const objMin=s.avgObjDmg;
     const objOk=role==='JUNGLE'?200:150;
     if(objMin<objOk&&s.wr<55){
-      r.push({tp:'warn',tx:pick([
+      r.push({tp:'warn',tx:pick2([
         `🏰 Daño a objetivos ${Math.round(objMin)}/min — bajo. Convierte las peleas ganadas en objetivos del mapa. El orden post-pelea: torre disponible → dragón → barón → más peleas. Las kills solas no ganan partidas.`,
         `🏰 ${Math.round(objMin)}/min en objetivos — las peleas ganadas sin objetivo son tiempo comprado. Después de cada fight ganada: la torre más cercana, luego el objetivo de mapa disponible.`,
         `🏰 ${Math.round(objMin)}/min en estructuras — ganar la pelea es el medio, no el fin. El objetivo post-fight (torre/dragón/barón) es lo que convierte el momentum en ventaja permanente.`,
+      ],[
+        `🏰 Objective damage ${Math.round(objMin)}/min — low. Convert won fights into map objectives. Post-fight order: available tower → dragon → baron → more fights. Kills alone don't win games.`,
+        `🏰 ${Math.round(objMin)}/min on objectives — won fights without an objective are borrowed time. After every fight won: nearest tower, then the available map objective.`,
+        `🏰 ${Math.round(objMin)}/min on structures — winning the fight is the means, not the end. The post-fight objective (tower/dragon/baron) is what converts momentum into a permanent advantage.`,
       ],27),goal:`≥${objOk} obj/min`});
     }else if(objMin>=objOk*1.8){
-      r.push({tp:'ok',tx:pick([
+      r.push({tp:'ok',tx:pick2([
         `🏰 Daño a objetivos ${Math.round(objMin)}/min — excelente. Conviertes las peleas ganadas en objetivos del mapa en vez de desperdiciar ese impulso.`,
         `🏰 ${Math.round(objMin)}/min en objetivos — conversión de peleas en ventaja permanente impecable. Ese daño a estructuras es lo que cierra partidas antes de que el rival se recupere.`,
         `🏰 ${Math.round(objMin)}/min — excelente macro. Ganas la pelea y cobras el objetivo. Ese ciclo es el que sube de elo.`,
+      ],[
+        `🏰 Objective damage ${Math.round(objMin)}/min — excellent. You convert won fights into map objectives instead of wasting the momentum.`,
+        `🏰 ${Math.round(objMin)}/min on objectives — flawless fight-to-permanent-advantage conversion. That structure damage is what closes games before the enemy recovers.`,
+        `🏰 ${Math.round(objMin)}/min — excellent macro. Win the fight and cash the objective. That cycle is what climbs elo.`,
       ],28)});
     }
   }
@@ -1737,16 +1957,24 @@ function autoSuggest(s,role,ct,tier=null,seed=0){
     const kpTh2=rth.kp||{g:65,ok:50};
     const kdaOk2=rth.kda.ok;
     if(s.kda>=kdaOk2&&s.kp<kpTh2.ok&&s.games>=5){
-      r.push({tp:'warn',tx:pick([
+      r.push({tp:'warn',tx:pick2([
         `🔍 KDA bueno (${s.kda.toFixed(2)}) pero KP solo ${Math.round(s.kp)}% — estás haciendo jugadas individuales sin estar en las peleas de equipo. Los objetivos del mapa se ganan con superioridad numérica, no con mejor KDA individual.`,
         `🔍 KDA ${s.kda.toFixed(2)} con KP ${Math.round(s.kp)}% — sobrevives bien pero no estás en las peleas donde se decide la partida. El elo no sube por KDA individual; sube por ventajas colectivas.`,
         `🔍 KDA sólido, KP bajo — operas en modo individual en un juego de equipo. Con ese KDA tienes las herramientas; el siguiente paso es aparecer en las peleas que mueven el mapa.`,
+      ],[
+        `🔍 Good KDA (${s.kda.toFixed(2)}) but KP only ${Math.round(s.kp)}% — you're making individual plays without being in team fights. Map objectives are won with numerical advantage, not better individual KDA.`,
+        `🔍 KDA ${s.kda.toFixed(2)} with KP ${Math.round(s.kp)}% — you survive well but you're not in the fights where the game is decided. Elo doesn't climb from individual KDA; it climbs from collective advantages.`,
+        `🔍 Solid KDA, low KP — you're operating in solo mode in a team game. With that KDA you have the tools; the next step is showing up to the fights that move the map.`,
       ],29)});
     }else if(s.kda<kdaOk2&&s.kp>=kpTh2.g&&s.games>=5){
-      r.push({tp:'',tx:pick([
+      r.push({tp:'',tx:pick2([
         `💡 KP alto (${Math.round(s.kp)}%) pero KDA ${s.kda.toFixed(2)} — participas en todo pero mueres por el equipo. Tu impacto colectivo es real; trabaja la supervivencia: llegar vivo 5 segundos tarde vale más que llegar y morir.`,
         `💡 KP ${Math.round(s.kp)}% con KDA ${s.kda.toFixed(2)} — estás en todas las peleas pero muriendo en ellas. El impacto es real; la supervivencia es la pieza que falta. Llega, haz tu trabajo y sal antes del siguiente engage.`,
         `💡 Alta participación, bajo KDA — el sacrificio por el equipo tiene límite. Con esa presencia ya demuestras impacto; ahora aprende a salir antes de que te eliminen.`,
+      ],[
+        `💡 High KP (${Math.round(s.kp)}%) but KDA ${s.kda.toFixed(2)} — you participate in everything but die for the team. Your collective impact is real; work on survival: arriving alive 5 seconds late is worth more than arriving and dying.`,
+        `💡 KP ${Math.round(s.kp)}% with KDA ${s.kda.toFixed(2)} — you're in every fight but dying in them. The impact is real; survival is the missing piece. Show up, do your job, and exit before the next engage.`,
+        `💡 High participation, low KDA — sacrificing for the team has a limit. With that presence you already prove impact; now learn to exit before they eliminate you.`,
       ],30)});
     }
   }
@@ -1755,31 +1983,47 @@ function autoSuggest(s,role,ct,tier=null,seed=0){
   if(role==='SUPPORT'&&ct!=='Tank'&&s.avgCC!=null&&s.games>=5){
     const ccOk=1.2;
     if(s.avgCC>=ccOk*1.5){
-      r.push({tp:'ok',tx:pick([
+      r.push({tp:'ok',tx:pick2([
         `🔗 CC ${s.avgCC.toFixed(1)}s/min — excelente control para soporte. Tus stuns crean oportunidades de kill consistentes. Coordina con quien puede responder más rápido en tu equipo.`,
         `🔗 ${s.avgCC.toFixed(1)}s CC/min — control de élite para soporte. Cada stun bien dirigido al carry enemigo es una ventana donde el ADC hace daño sin respuesta.`,
         `🔗 ${s.avgCC.toFixed(1)}s CC/min — el soporte que lockea carries crea más oportunidades que el que solo cura. Este nivel de control es la diferencia entre ganar y observar peleas.`,
+      ],[
+        `🔗 CC ${s.avgCC.toFixed(1)}s/min — excellent control for support. Your stuns create consistent kill opportunities. Coordinate with whoever can follow up fastest on your team.`,
+        `🔗 ${s.avgCC.toFixed(1)}s CC/min — elite control for support. Every stun well-aimed at the enemy carry is a window where the ADC deals damage unopposed.`,
+        `🔗 ${s.avgCC.toFixed(1)}s CC/min — the support who locks down carries creates more opportunities than the one who only heals. This level of control is the difference between winning and watching fights.`,
       ],31)});
     }else if(s.avgCC<ccOk&&ct==='Support'){
-      r.push({tp:'warn',tx:pick([
+      r.push({tp:'warn',tx:pick2([
         `🔗 CC ${s.avgCC.toFixed(1)}s/min — bajo para soporte de engage. El CC más valioso cae sobre los personajes de daño del enemigo cuando están solos o fuera de posición.`,
         `🔗 ${s.avgCC.toFixed(1)}s CC/min — por debajo del umbral para soporte de engage. Tu CC es el arma principal; cada stun al tanque enemigo es una oportunidad de kill desperdiciada.`,
         `🔗 ${s.avgCC.toFixed(1)}s CC/min — el soporte de engage sin CC impactante es un carry sin daño. Prioriza el stun sobre los carries fuera de posición, no sobre los bien protegidos.`,
+      ],[
+        `🔗 CC ${s.avgCC.toFixed(1)}s/min — low for an engage support. The most valuable CC lands on the enemy damage dealers when they're alone or out of position.`,
+        `🔗 ${s.avgCC.toFixed(1)}s CC/min — below threshold for engage support. Your CC is the main weapon; every stun on the enemy tank is a wasted kill opportunity.`,
+        `🔗 ${s.avgCC.toFixed(1)}s CC/min — an engage support without impactful CC is a carry without damage. Prioritize the stun on carries out of position, not on well-protected ones.`,
       ],32),goal:`≥${ccOk}s CC/min`});
     }
   }
 
   // ── Consistencia ──
   if(s.games>=8){
-    if(s.wr>=58)r.push({tp:'ok',tx:pick([
+    if(s.wr>=58)r.push({tp:'ok',tx:pick2([
       `📈 WR ${s.wr.toFixed(1)}% en ${s.games} partidas — señal de dominio real del rol o campeón.`,
       `📈 ${s.wr.toFixed(1)}% en ${s.games} partidas — eso no es suerte, es patrón. El elo lo nota, aunque tarde en reflejarlo.`,
       `📈 WR ${s.wr.toFixed(1)}% con ${s.games} partidas de muestra — consistencia de élite. Sigue sin cambiar lo que funciona.`,
+    ],[
+      `📈 WR ${s.wr.toFixed(1)}% over ${s.games} games — a sign of genuine mastery of the role or champion.`,
+      `📈 ${s.wr.toFixed(1)}% over ${s.games} games — that's not luck, it's a pattern. The elo system will notice, even if it takes time to reflect it.`,
+      `📈 WR ${s.wr.toFixed(1)}% with ${s.games} games in the sample — elite consistency. Keep not changing what works.`,
     ],33)});
-    else if(s.wr<=42)r.push({tp:'warn',tx:pick([
+    else if(s.wr<=42)r.push({tp:'warn',tx:pick2([
       `📉 WR ${s.wr.toFixed(1)}% en ${s.games} partidas — con este volumen es un patrón, no mala suerte. Identifica el fallo que más se repite (KDA, visión, muertes) y trabaja solo ese durante las próximas 5 partidas.`,
       `📉 ${s.wr.toFixed(1)}% en ${s.games} partidas — las rachas duran 5 partidas, los patrones duran 20. Esto es un patrón. Elige la métrica más baja de esta sesión y trabaja solo esa.`,
       `📉 WR ${s.wr.toFixed(1)}% en ${s.games} partidas — con este volumen la mala suerte ya no aplica. El fallo está en los números, y los números están en esta pantalla.`,
+    ],[
+      `📉 WR ${s.wr.toFixed(1)}% over ${s.games} games — at this volume it's a pattern, not bad luck. Identify the most repeated failure (KDA, vision, deaths) and work only that one for the next 5 games.`,
+      `📉 ${s.wr.toFixed(1)}% over ${s.games} games — losing streaks last 5 games, patterns last 20. This is a pattern. Pick the lowest metric from this session and work only that one.`,
+      `📉 WR ${s.wr.toFixed(1)}% over ${s.games} games — at this volume, bad luck no longer applies. The failure is in the numbers, and the numbers are on this screen.`,
     ],34),goal:'≥50% WR'});
   }
 
@@ -1799,72 +2043,110 @@ function autoSuggestMatch(m,role,ct,tier){
   // Seed basado en matchId para que la misma partida siempre muestre el mismo mensaje
   const _sid=m._matchId?m._matchId.split('').reduce((a,c,i)=>a+c.charCodeAt(0)*(i+1),0):42;
   const pick=(arr,off=0)=>arr[(_sid+off)%arr.length];
+  const pick2=(es,en,off=0)=>{const a=LANG==='en'?en:es;return a[(_sid+off)%a.length];};
 
   // KDA
   if(kda>=rth.kda.g){
-    r.push({tp:'ok',tx:pick([
+    r.push({tp:'ok',tx:pick2([
       `🏆 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Eficiente. El enemigo no pudo cobrarte lo que no le diste.`,
       `🏆 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Muriste poco, hiciste mucho. El concepto básico, ejecutado bien.`,
       `🏆 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Cada muerte evitada es experiencia y oro que el enemigo nunca tuvo. Esta partida lo demuestra.`,
       `🏆 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Sólido. El marcador dice que estuviste vivo cuando importaba.`,
+    ],[
+      `🏆 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Efficient. The enemy couldn't collect what you didn't give them.`,
+      `🏆 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Died little, did a lot. The basic concept, executed well.`,
+      `🏆 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Every avoided death is experience and gold the enemy never had. This game proves it.`,
+      `🏆 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Solid. The scoreboard says you were alive when it mattered.`,
     ])});
   } else if(kda>=rth.kda.ok){
-    r.push({tp:'',tx:pick([
+    r.push({tp:'',tx:pick2([
       `👍 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Decente, pero las ${dts} muerte${dts!==1?'s':''} dejaron al enemigo con regalos que no necesitaban.`,
       `👍 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Aceptable. Las ${dts} muerte${dts!==1?'s':''} no hundieron la partida, pero sí le dieron al rival un respiro.`,
       `👍 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Bien, aunque ${dts} muerte${dts!==1?'s':''} es ${dts!==1?'son':'es'} exactamente ${dts} oportunidad${dts!==1?'es':''} de mejorar.`,
+    ],[
+      `👍 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Decent, but ${dts} death${dts!==1?'s':''} left the enemy with gifts they didn't need.`,
+      `👍 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Acceptable. The ${dts} death${dts!==1?'s':''} didn't sink the game, but did give the enemy a breather.`,
+      `👍 KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Fine, though ${dts} death${dts!==1?'s':''} ${dts!==1?'are':'is'} exactly ${dts} improvement opportunity${dts!==1?'ies':'y'}.`,
     ],1),goal:`≥${rth.kda.g.toFixed(1)} KDA`});
   } else {
-    r.push({tp:'warn',tx:pick([
+    r.push({tp:'warn',tx:pick2([
       `❌ KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. ${dts} muerte${dts!==1?'s':''} es generoso con el enemigo. ¿Sabías dónde estaban antes de cada una?`,
       `❌ KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Con ${dts} muertes, el rival cobró caro sin mucho esfuerzo. El patrón vale la pena revisar.`,
       `❌ KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. ${dts} veces la pantalla se puso gris. No es mala racha, es información útil si la lees bien.`,
       `❌ KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Las ${dts} muerte${dts!==1?'s':''} probablemente cambiaron el estado del juego. ¿Cuál fue el común denominador?`,
+    ],[
+      `❌ KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. ${dts} death${dts!==1?'s':''} is generous to the enemy. Did you know where they were before each one?`,
+      `❌ KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. With ${dts} deaths, the enemy cashed in without much effort. The pattern is worth reviewing.`,
+      `❌ KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. ${dts} times the screen went gray. Not a bad streak — useful information if you read it right.`,
+      `❌ KDA ${kda.toFixed(2)} — ${kls}/${dts}/${ast}. Those ${dts} death${dts!==1?'s':''} probably changed the game state. What was the common denominator?`,
     ],2),goal:`≥${rth.kda.ok.toFixed(1)} KDA`});
   }
 
   // Muertes (refuerzo si son muchas)
   if(dts>=rth.deaths.bad){
-    r.push({tp:'warn',tx:pick([
+    r.push({tp:'warn',tx:pick2([
       `💀 ${dts} muertes en ${Math.round(dur)}min — cada una es una oleada de minions y experiencia gratis para el rival. El marcador no miente.`,
       `💀 ${dts} vidas entregadas en ${Math.round(dur)}min. ${(dts/dur*10).toFixed(1)} recompensas gratuitas por cada 10 minutos. Generoso.`,
       `💀 ${dts} muertes. El equipo enemigo no necesitó hacer jugadas brillantes — se lo pusiste fácil tú.`,
       `💀 ${dts} muertes en ${Math.round(dur)}min. Antes de cada una había una decisión que se pudo tomar distinto.`,
-    ],3),goal:`≤${rth.deaths.ok.toFixed(1)} muertes`});
+    ],[
+      `💀 ${dts} deaths in ${Math.round(dur)}min — each one is a free minion wave and experience for the enemy. The scoreboard doesn't lie.`,
+      `💀 ${dts} lives handed over in ${Math.round(dur)}min. ${(dts/dur*10).toFixed(1)} free rewards per 10 minutes. Generous.`,
+      `💀 ${dts} deaths. The enemy team didn't need brilliant plays — you made it easy for them.`,
+      `💀 ${dts} deaths in ${Math.round(dur)}min. Before each one was a decision that could have gone differently.`,
+    ],3),goal:`≤${rth.deaths.ok.toFixed(1)} deaths`});
   }
 
   // Farm
   if(role!=='SUPPORT'){
     const csTh=rth.cs||{g:7,ok:5.5};
     if(csMin>=csTh.g){
-      r.push({tp:'ok',tx:pick([
+      r.push({tp:'ok',tx:pick2([
         `💰 ${csMin.toFixed(1)} cs/min — farm limpio. Los ítems llegaron cuando tenían que llegar.`,
         `💰 ${csMin.toFixed(1)} cs/min — las oleadas no se escaparon. Esa ventaja en oro se acumula en silencio y se nota en las peleas.`,
         `💰 ${csMin.toFixed(1)} cs/min — excelente gestión. Alguien sí entiende que el minion también da oro.`,
+      ],[
+        `💰 ${csMin.toFixed(1)} cs/min — clean farming. Items arrived when they were supposed to.`,
+        `💰 ${csMin.toFixed(1)} cs/min — waves didn't get away. That gold advantage accumulates quietly and shows in fights.`,
+        `💰 ${csMin.toFixed(1)} cs/min — excellent management. Someone does understand that minions also give gold.`,
       ],4)});
     } else if(csMin<csTh.ok){
-      r.push({tp:'warn',tx:pick([
+      r.push({tp:'warn',tx:pick2([
         `💰 ${csMin.toFixed(1)} cs/min — bajo. Cada oleada que pasó son ítems que el enemigo completó antes que tú.`,
         `💰 ${csMin.toFixed(1)} cs/min — las oleadas no esperan y tú sí esperaste. Limpia antes de rotar.`,
         `💰 ${csMin.toFixed(1)} cs/min — el farm no es glamoroso, pero es la diferencia de un ítem completo a los 20 minutos.`,
         `💰 ${csMin.toFixed(1)} cs/min — el carril te regaló oro y lo dejaste tirado. El enemigo no hubiera cometido ese error.`,
+      ],[
+        `💰 ${csMin.toFixed(1)} cs/min — low. Every wave that passed is items the enemy completed before you.`,
+        `💰 ${csMin.toFixed(1)} cs/min — waves don't wait, and you did. Clear before rotating.`,
+        `💰 ${csMin.toFixed(1)} cs/min — farming isn't glamorous, but it's the difference of a full item by minute 20.`,
+        `💰 ${csMin.toFixed(1)} cs/min — the lane handed you gold and you left it on the floor. The enemy wouldn't have made that mistake.`,
       ],5),goal:`≥${csTh.ok.toFixed(1)} cs/min`});
     }
   }
 
   // Visión
   if(vis>=rth.vision.g){
-    r.push({tp:'ok',tx:pick([
+    r.push({tp:'ok',tx:pick2([
       `👁️ ${vis.toFixed(2)}/min — buena visión. El equipo tomó decisiones con información real, no con esperanza.`,
       `👁️ ${vis.toFixed(2)}/min — bien wardado. Cada ojo en el mapa es una muerte que no ocurrió.`,
       `👁️ ${vis.toFixed(2)}/min — control del mapa sólido. Las sorpresas del enemigo no llegaron tan gratis.`,
+    ],[
+      `👁️ ${vis.toFixed(2)}/min — good vision. The team made decisions with real information, not hope.`,
+      `👁️ ${vis.toFixed(2)}/min — well warded. Every eye on the map is a death that didn't happen.`,
+      `👁️ ${vis.toFixed(2)}/min — solid map control. Enemy surprises didn't come for free.`,
     ],6)});
   } else if(vis<rth.vision.ok){
-    r.push({tp:'warn',tx:pick([
+    r.push({tp:'warn',tx:pick2([
       `👁️ ${vis.toFixed(2)}/min — sin visión, las muertes no fueron mala suerte. Wardea antes de entrar a zona de riesgo.`,
       `👁️ ${vis.toFixed(2)}/min — andar sin wards es confiar en que el enemigo no está ahí. Frecuentemente está ahí.`,
       `👁️ ${vis.toFixed(2)}/min — en el mapa oscuro solo hay sorpresas, y no del tipo agradable.`,
       `👁️ ${vis.toFixed(2)}/min — los wards no ganan partidas solos, pero sí evitan perderlas de formas evitables.`,
+    ],[
+      `👁️ ${vis.toFixed(2)}/min — without vision, the deaths weren't bad luck. Ward before entering danger zones.`,
+      `👁️ ${vis.toFixed(2)}/min — walking without wards means trusting the enemy isn't there. They frequently are.`,
+      `👁️ ${vis.toFixed(2)}/min — in a dark map there are only surprises, and not the pleasant kind.`,
+      `👁️ ${vis.toFixed(2)}/min — wards don't win games alone, but they do prevent losing them in avoidable ways.`,
     ],7),goal:`≥${rth.vision.ok.toFixed(2)} ward/min`});
   }
 
@@ -1873,16 +2155,24 @@ function autoSuggestMatch(m,role,ct,tier){
     const _rdmg=rth.dmg||{g:833,ok:500};
     const dmgTh=role==='SUPPORT'?{g:467,ok:233}:{g:_rdmg.g,ok:_rdmg.ok};
     if(dmg>=dmgTh.g){
-      r.push({tp:'ok',tx:pick([
+      r.push({tp:'ok',tx:pick2([
         `⚔️ ${Math.round(dmg)}/min — fuiste una amenaza real. El equipo contrario tuvo que pensar antes de entrar.`,
         `⚔️ ${Math.round(dmg)}/min — daño constante. No todo se ve en el marcador, pero esto sí cuenta.`,
-        `⚔️ ${Math.round(dmg)}/min — hiciste el trabajo que se esperaba del ${_roleEs(role)}. El equipo lo agradeció, aunque no lo haya dicho.`,
+        `⚔️ ${Math.round(dmg)}/min — hiciste el trabajo que se esperaba del ${_roleL(role)}. El equipo lo agradeció, aunque no lo haya dicho.`,
+      ],[
+        `⚔️ ${Math.round(dmg)}/min — you were a real threat. The enemy team had to think before engaging.`,
+        `⚔️ ${Math.round(dmg)}/min — consistent damage. Not everything shows on the scoreboard, but this does count.`,
+        `⚔️ ${Math.round(dmg)}/min — you did what was expected of a ${_roleL(role)}. The team appreciated it, even if they didn't say so.`,
       ],8)});
     } else if(dmg<dmgTh.ok){
-      r.push({tp:'warn',tx:pick([
-        `⚔️ ${Math.round(dmg)}/min — poco daño para ${_roleEs(role)}. ¿Llegaste tarde a las peleas o no pudiste posicionarte bien?`,
+      r.push({tp:'warn',tx:pick2([
+        `⚔️ ${Math.round(dmg)}/min — poco daño para ${_roleL(role)}. ¿Llegaste tarde a las peleas o no pudiste posicionarte bien?`,
         `⚔️ ${Math.round(dmg)}/min — el equipo esperaba más amenaza de tu parte. El ${role} que no hace daño es invisible para el enemigo, y no de la buena manera.`,
         `⚔️ ${Math.round(dmg)}/min — en las peleas de equipo, el daño que no hiciste alguien del equipo lo absorbió con su vida.`,
+      ],[
+        `⚔️ ${Math.round(dmg)}/min — low damage for ${_roleL(role)}. Did you arrive late to fights or couldn't you position well?`,
+        `⚔️ ${Math.round(dmg)}/min — the team expected more threat from you. A ${_roleL(role)} that doesn't deal damage is invisible to the enemy, and not in a good way.`,
+        `⚔️ ${Math.round(dmg)}/min — in teamfights, the damage you didn't deal was absorbed by a teammate's health bar.`,
       ],9),goal:`≥${Math.round(dmgTh.ok)} dmg/min`});
     }
   }
@@ -1891,17 +2181,26 @@ function autoSuggestMatch(m,role,ct,tier){
   if(['JUNGLE','SUPPORT','BOT','TOP','MID'].includes(role)){
     const kpTh=rth.kp||{g:65,ok:50};
     if(kp>=kpTh.g){
-      r.push({tp:'ok',tx:pick([
+      r.push({tp:'ok',tx:pick2([
         `🤝 KP ${Math.round(kp)}% — estuviste en todas las peleas importantes. Eso vale más que el KDA muchas veces.`,
         `🤝 KP ${Math.round(kp)}% — participación alta. El equipo te encontró cuando lo necesitaba.`,
         `🤝 KP ${Math.round(kp)}% — presente cuando contaba. El ${role} que aparece en las peleas gana el juego que el ${role} que farmea solo nunca va a ganar.`,
+      ],[
+        `🤝 KP ${Math.round(kp)}% — you were in every important fight. That's worth more than KDA many times over.`,
+        `🤝 KP ${Math.round(kp)}% — high participation. The team found you when they needed you.`,
+        `🤝 KP ${Math.round(kp)}% — present when it counted. The ${_roleL(role)} who shows up to fights wins the game that the one farming alone will never win.`,
       ],10)});
     } else if(kp<kpTh.ok){
-      r.push({tp:'warn',tx:pick([
+      r.push({tp:'warn',tx:pick2([
         `🤝 KP ${Math.round(kp)}% — el equipo peleó sin ti más de lo que debería. ¿Dónde estabas?`,
-        `🤝 KP ${Math.round(kp)}% — participación baja para ${_roleEs(role)}. En LoL, no estar también es una decisión — y generalmente es la peor.`,
+        `🤝 KP ${Math.round(kp)}% — participación baja para ${_roleL(role)}. En LoL, no estar también es una decisión — y generalmente es la peor.`,
         `🤝 KP ${Math.round(kp)}% — pocas peleas para un ${role}. El equipo ganó o perdió esas peleas sin contar contigo.`,
         `🤝 KP ${Math.round(kp)}% — el mapa registra dónde estabas cuando pasaron las teamfights. Vale la pena revisarlo.`,
+      ],[
+        `🤝 KP ${Math.round(kp)}% — the team fought without you more than they should have. Where were you?`,
+        `🤝 KP ${Math.round(kp)}% — low participation for ${_roleL(role)}. In LoL, not being there is also a decision — and usually the worst one.`,
+        `🤝 KP ${Math.round(kp)}% — few fights for a ${_roleL(role)}. The team won or lost those fights without counting on you.`,
+        `🤝 KP ${Math.round(kp)}% — the map records where you were when the teamfights happened. Worth reviewing.`,
       ],11),goal:`≥${kpTh.ok}% KP`});
     }
   }
@@ -1919,15 +2218,16 @@ function scoreToDisplay(n){
   return(v>=0?'+':'')+v.toFixed(2);
 }
 function scoreToPercentile(n){
-  if(n>=92)return{pct:'Rendimiento élite',dir:'top'};
-  if(n>=84)return{pct:'Muy destacado',dir:'top'};
-  if(n>=74)return{pct:'Por encima del promedio',dir:'top'};
-  if(n>=63)return{pct:'Sobre el promedio',dir:'top'};
-  if(n>=50)return{pct:'Promedio',dir:'avg'};
-  if(n>=40)return{pct:'Bajo el promedio',dir:'bot'};
-  if(n>=30)return{pct:'Por mejorar',dir:'bot'};
-  if(n>=18)return{pct:'Necesita atención',dir:'bot'};
-  return{pct:'Área de mejora',dir:'bot'};
+  const _e=LANG==='en';
+  if(n>=92)return{pct:_e?'Elite performance':'Rendimiento élite',dir:'top'};
+  if(n>=84)return{pct:_e?'Very strong':'Muy destacado',dir:'top'};
+  if(n>=74)return{pct:_e?'Above average':'Por encima del promedio',dir:'top'};
+  if(n>=63)return{pct:_e?'Above average':'Sobre el promedio',dir:'top'};
+  if(n>=50)return{pct:_e?'Average':'Promedio',dir:'avg'};
+  if(n>=40)return{pct:_e?'Below average':'Bajo el promedio',dir:'bot'};
+  if(n>=30)return{pct:_e?'Needs improvement':'Por mejorar',dir:'bot'};
+  if(n>=18)return{pct:_e?'Needs attention':'Necesita atención',dir:'bot'};
+  return{pct:_e?'Room to grow':'Área de mejora',dir:'bot'};
 }
 function scoreToGrade(n){
   if(n>=92)return{g:'S+',c:'#ffd447'};
@@ -1945,11 +2245,12 @@ function predictRank(sc,wr,games){
   const good=sc>=58&&wr>=52;
   const bad=sc<42||wr<44;
   const mediocre=sc<50||wr<48;
-  if(strong)return{icon:'🚀',label:'Tendencia positiva',col:'var(--green)',tip:'Rendimiento y WR por encima del promedio — buena racha de juego.'};
-  if(good)return{icon:'📈',label:'Bien encaminado',col:'var(--cyan)',tip:'Rendimiento sobre promedio — vas en la dirección correcta.'};
-  if(bad)return{icon:'⚠️',label:'Tendencia a mejorar',col:'var(--red)',tip:'Rendimiento y WR por debajo del promedio — hay aspectos concretos por trabajar.'};
-  if(mediocre)return{icon:'😐',label:'Rendimiento estable',col:'var(--gold)',tip:'Rendimiento dentro del promedio — pequeñas mejoras en las dimensiones más bajas marcan la diferencia.'};
-  return{icon:'→',label:"Rendimiento promedio",col:'var(--text2)',tip:'Rendimiento dentro del promedio del elo.'};
+  const _e=LANG==='en';
+  if(strong)return{icon:'🚀',label:_e?'Positive trend':'Tendencia positiva',col:'var(--green)',tip:_e?'Performance and WR above average — good stretch of play.':'Rendimiento y WR por encima del promedio — buena racha de juego.'};
+  if(good)return{icon:'📈',label:_e?'On track':'Bien encaminado',col:'var(--cyan)',tip:_e?'Above-average performance — heading in the right direction.':'Rendimiento sobre promedio — vas en la dirección correcta.'};
+  if(bad)return{icon:'⚠️',label:_e?'Needs improvement':'Tendencia a mejorar',col:'var(--red)',tip:_e?'Performance and WR below average — specific areas to work on.':'Rendimiento y WR por debajo del promedio — hay aspectos concretos por trabajar.'};
+  if(mediocre)return{icon:'😐',label:_e?'Stable performance':'Rendimiento estable',col:'var(--gold)',tip:_e?'Average performance — small improvements in your lowest dimensions make the difference.':'Rendimiento dentro del promedio — pequeñas mejoras en las dimensiones más bajas marcan la diferencia.'};
+  return{icon:'→',label:_e?'Average performance':'Rendimiento promedio',col:'var(--text2)',tip:_e?'Performance within elo average.':'Rendimiento dentro del promedio del elo.'};
 }
 function computeAdaptiveScore(matches,tier=null,tierFn=null){
   if(!matches||!matches.length)return 50;
@@ -2096,7 +2397,7 @@ async function addPlayer(overrideName,overrideTag){
   const _existing=players.find(p=>p.gameName?.toLowerCase()===name.toLowerCase()&&p.tagLine?.toLowerCase()===tag.toLowerCase());
   if(_existing){if(_existing._ghost||_existing._loadFailed){const _ei=players.indexOf(_existing);if(_ei>=0)refreshPlayer(_ei);}else showErr('Jugador ya agregado.');return;}
   const btn=document.getElementById('addBtn');
-  if(!overrideName){btn.disabled=true;btn.textContent='BUSCANDO...';}
+  if(!overrideName){btn.disabled=true;btn.textContent=T[LANG].addBtnSearch;}
   const skGrid=document.getElementById('grid');
   const _isMulti=players.length>0;
   let sk=null;
@@ -2125,12 +2426,12 @@ async function addPlayer(overrideName,overrideTag){
     skGrid.appendChild(sk);
   }
   const acct=await rFetch(`https://${ACCT}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tag)}`);
-  if(!acct){if(sk)sk.remove();else if(_isMulti&&_compTbl){_compTbl.innerHTML='';skGrid.style.display='';}renderAll();if(btn){btn.disabled=false;btn.textContent='+ AGREGAR';}return;}
+  if(!acct){if(sk)sk.remove();else if(_isMulti&&_compTbl){_compTbl.innerHTML='';skGrid.style.display='';}renderAll();if(btn){btn.disabled=false;btn.textContent=T[LANG].addBtn;}return;}
   const [summ,ranked]=await Promise.all([
     rFetch(`https://${PLAT}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${acct.puuid}`),
     rFetch(`https://${PLAT}.api.riotgames.com/lol/league/v4/entries/by-puuid/${acct.puuid}`)
   ]);
-  if(!summ){if(sk)sk.remove();else if(_isMulti&&_compTbl){_compTbl.innerHTML='';skGrid.style.display='';}renderAll();if(btn){btn.disabled=false;btn.textContent='+ AGREGAR';}return;}
+  if(!summ){if(sk)sk.remove();else if(_isMulti&&_compTbl){_compTbl.innerHTML='';skGrid.style.display='';}renderAll();if(btn){btn.disabled=false;btn.textContent=T[LANG].addBtn;}return;}
   const count=getCount();
   const _wasLen=players.length;
   const countCaos=50; // null-queue pool; mayoría son cache hits de Solo/Flex ya fetcheados
@@ -2175,7 +2476,7 @@ async function addPlayer(overrideName,overrideTag){
     updated:new Date()
   });
   if(players.length===2)players[0].activeTab='stats';
-  if(!overrideName){document.getElementById('searchInput').value='';btn.disabled=false;btn.textContent='+ AGREGAR';}
+  if(!overrideName){document.getElementById('searchInput').value='';btn.disabled=false;btn.textContent=T[LANG].addBtn;}
   saveToHistory(acct.gameName,acct.tagLine);
   if(sk)sk.remove();
   savePlayers();renderAll();
@@ -2223,7 +2524,7 @@ function renderAll(){
     if(_ghosts.length){
       const _cs=document.getElementById('comp-sec');
       _cs.classList.add('vis');
-      document.getElementById('compTable').innerHTML=`<div class="loading-ph" style="min-height:220px">⏳ Recargando datos... puede tomar unos segundos</div>`;
+      document.getElementById('compTable').innerHTML=`<div class="loading-ph" style="min-height:220px">⏳ ${T[LANG].refreshing}</div>`;
       _ghosts.forEach(p=>{const idx=players.indexOf(p);if(idx>=0)refreshPlayer(idx);});
       return;
     }
@@ -2376,7 +2677,7 @@ function buildCard(p,idx){
   const div=document.createElement('div');
   div.className='pcard';div.id=`card-${idx}`;
   if(p._ghost||p._loadFailed){
-    const _stateMsg=p._loadFailed?'Error de API — verifica tu API key':'Sin datos — sesión anterior';
+    const _stateMsg=p._loadFailed?T[LANG].apiError:T[LANG].ghostMsg;
     const _stateCol=p._loadFailed?'var(--red)':'var(--text3)';
     div.innerHTML=`
       <div class="chead">
@@ -2384,7 +2685,7 @@ function buildCard(p,idx){
         <div style="flex:1;min-width:0"><div class="cname">${p.gameName}</div><div class="ctag">#${p.tagLine} · LV.${p.level||'?'}</div></div>
         <div class="chead-actions"><button class="btn-ghost" onclick="removePlayer(${idx})">✕</button></div>
       </div>
-      <div style="padding:32px 16px;text-align:center;color:${_stateCol};font-family:'Share Tech Mono',monospace;font-size:15px">
+      <div id="ghost-body-${idx}" style="padding:32px 16px;text-align:center;color:${_stateCol};font-family:'Share Tech Mono',monospace;font-size:15px">
         ${_stateMsg}<br><br>
         <button class="btn-primary" onclick="refreshPlayer(${idx})" style="font-size:11px;padding:6px 18px">↻ Actualizar</button>
       </div>`;
@@ -2476,10 +2777,14 @@ function buildCard(p,idx){
     const _dimsSort=[...scoreData.dims].sort((a,b)=>a.score-b.score);
     const _weakest=_dimsSort[0],_strongest=_dimsSort[_dimsSort.length-1];
     const _scalePos=Math.round(sc);
-    const _tipInterpret=_scNorm>=0.6?'🔥 Rendimiento élite — estás dominando tu elo':_scNorm>=0.3?'📈 Por encima del promedio de forma consistente':_scNorm>=0.05?'✅ Ligeramente positivo — dentro del rango esperado':_scNorm>=-0.05?'〰️ En el promedio exacto de tu elo':_scNorm>=-0.3?'⚠️ Ligeramente bajo el promedio — hay margen de mejora':'📉 Bajo el promedio — varios aspectos para trabajar';
-    const _tipHow=`Suma ponderada de dimensiones evaluadas con los umbrales de <strong>${roleSolo||p.role}</strong> escalados al elo del jugador.<br>Score 0 = promedio exacto del elo · cada punto = ~2% de diferencia.`;
+    const _tipInterpret=LANG==='en'?(
+      _scNorm>=0.6?'🔥 Elite performance — you\'re dominating your elo':_scNorm>=0.3?'📈 Above average consistently':_scNorm>=0.05?'✅ Slightly positive — within expected range':_scNorm>=-0.05?'〰️ Exactly at your elo average':_scNorm>=-0.3?'⚠️ Slightly below average — room to improve':'📉 Below average — several aspects to work on'
+    ):(
+      _scNorm>=0.6?'🔥 Rendimiento élite — estás dominando tu elo':_scNorm>=0.3?'📈 Por encima del promedio de forma consistente':_scNorm>=0.05?'✅ Ligeramente positivo — dentro del rango esperado':_scNorm>=-0.05?'〰️ En el promedio exacto de tu elo':_scNorm>=-0.3?'⚠️ Ligeramente bajo el promedio — hay margen de mejora':'📉 Bajo el promedio — varios aspectos para trabajar'
+    );
+    const _tipHow=LANG==='en'?`Weighted sum of dimensions evaluated against thresholds for <strong>${_roleL(roleSolo||p.role)}</strong> scaled to the player's elo.<br>Score 0 = exact elo average · each point = ~2% difference.`:`Suma ponderada de dimensiones evaluadas con los umbrales de <strong>${roleSolo||p.role}</strong> escalados al elo del jugador.<br>Score 0 = promedio exacto del elo · cada punto = ~2% de diferencia.`;
     const _stipHtml=`<div class="stip-box">
-      <div style="font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;color:var(--text3);margin-bottom:10px">SCORE DE RENDIMIENTO</div>
+      <div style="font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;color:var(--text3);margin-bottom:10px">${LANG==='en'?'PERFORMANCE SCORE':'SCORE DE RENDIMIENTO'}</div>
       <div style="margin-bottom:12px">
         <div class="stip-scale-bar">
           <div class="stip-marker" style="left:${_scalePos}%;color:${scoreColor(sc)};background:${scoreColor(sc)}"></div>
@@ -2493,19 +2798,19 @@ function buildCard(p,idx){
       <div style="font-size:15px;color:var(--text);margin-bottom:12px;line-height:1.5">${_tipInterpret}</div>
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <div class="stip-card" style="background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.2)">
-          <div class="stip-card-label" style="color:var(--green)">PUNTO FUERTE</div>
+          <div class="stip-card-label" style="color:var(--green)">${LANG==='en'?'STRENGTH':'PUNTO FUERTE'}</div>
           <div class="stip-card-val" style="color:var(--text)">${_strongest?.name||'—'}</div>
           <div style="font-size:18px;font-weight:900;font-family:'Orbitron',monospace;color:var(--green)">${_strongest?.score||0}</div>
         </div>
         <div class="stip-card" style="background:rgba(255,58,92,.07);border:1px solid rgba(255,58,92,.2)">
-          <div class="stip-card-label" style="color:var(--red)">A MEJORAR</div>
+          <div class="stip-card-label" style="color:var(--red)">${LANG==='en'?'TO IMPROVE':'A MEJORAR'}</div>
           <div class="stip-card-val" style="color:var(--text)">${_weakest?.name||'—'}</div>
           <div style="font-size:18px;font-weight:900;font-family:'Orbitron',monospace;color:var(--red)">${_weakest?.score||0}</div>
         </div>
       </div>
       <div style="font-size:11px;color:var(--text3);line-height:1.6;padding-top:10px;border-top:1px solid var(--border)">${_tipHow}</div>
       <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-family:'Orbitron',monospace;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">TABLA DE GRADOS</div>
+        <div style="font-size:11px;font-family:'Orbitron',monospace;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">${LANG==='en'?'GRADE TABLE':'TABLA DE GRADOS'}</div>
         ${_gradeLegend}
       </div>
     </div>`;
@@ -2561,7 +2866,7 @@ function buildCard(p,idx){
       <div class="wr-section"><div class="wr-pct" style="color:var(--text3)">— % WR</div><div class="wr-detail">0V · 0D · 0G</div><div class="wr-track"></div></div>
     </div>`;
     const tier=q.tier;
-    const tierStr=noRank.includes(tier)?tierEs(tier):`${tierEs(tier)} ${q.rank}`;
+    const tierStr=noRank.includes(tier)?tierName(tier):`${tierName(tier)} ${q.rank}`;
     const w=q.wins||0,l=q.losses||0,tot=w+l;
     const wr=tot>0?Math.round(w/tot*100):0;
     return`<div class="rank-row" style="padding:10px 16px;">
@@ -2579,15 +2884,15 @@ function buildCard(p,idx){
       </div>
     </div>`;
   }
-  const rankHtml=rankRow(p.soloQ,'SOLO/DUO')+rankRow(p.flexQ,'FLEX 5v5');
+  const rankHtml=rankRow(p.soloQ,T[LANG].rankQueues['SOLO/DUO'])+rankRow(p.flexQ,T[LANG].rankQueues['FLEX 5v5']);
 
   // Edit panel
-  const roleOpts=['TOP','JUNGLE','MID','BOT','SUPPORT'].map(r=>`<option value="${r}"${p.role===r?' selected':''}>${_roleEs(r)}</option>`).join('');
+  const roleOpts=['TOP','JUNGLE','MID','BOT','SUPPORT'].map(r=>`<option value="${r}"${p.role===r?' selected':''}>${_roleL(r)}</option>`).join('');
   const typeOpts=['Tank','Bruiser','Assassin','Mage','Marksman','Support','Unknown'].map(t=>`<option value="${t}"${p.champType===t?' selected':''}>${t}</option>`).join('');
 
   // Tabs
   const tabNames=['análisis','stats','campeones','partidas','gráficas','química'];
-  const tabs=tabNames.map(t=>`<div class="tab${p.activeTab===t?' active':''}" onclick="setTab(${idx},'${t}')">${t}</div>`).join('');
+  const tabs=tabNames.map(t=>`<div class="tab${p.activeTab===t?' active':''}" onclick="setTab(${idx},'${t}')">${T[LANG].tabs[t]||t}</div>`).join('');
 
   // Stats content
     // Streak
@@ -2602,13 +2907,13 @@ function buildCard(p,idx){
   const _stRaw=_stF==='solo'?(p.matchesSolo||[]):_stF==='flex'?(p.matchesFlex||[]):[...(p.matchesSolo||[]),...(p.matchesFlex||[])].sort((a,b)=>(b._gameCreation||0)-(a._gameCreation||0));
   const _statsPool=_stRaw.slice(0,20);
   const sStats=_statsPool.length?calcStats({matches:_statsPool}):s;
-  const _stFilterChips=['solo','flex','ambos'].map(f=>`<button class="adv-tab${_stF===f?' active':''}" onclick="setStatsFilter(${idx},'${f}')">${f==='solo'?'SOLO/DUO':f==='flex'?'FLEX':'AMBOS'}</button>`).join('');
-  let statsContent='<div class="loading-ph">// SIN PARTIDAS RANKEADAS RECIENTES</div>';
+  const _stFilterChips=['solo','flex','ambos'].map(f=>`<button class="adv-tab${_stF===f?' active':''}" onclick="setStatsFilter(${idx},'${f}')">${T[LANG].statFilters[f]||f}</button>`).join('');
+  let statsContent=`<div class="loading-ph">${T[LANG].noRanked}</div>`;
   if(sStats){
     const _baseTh=ROLE_TH[p.role]||ROLE_TH.MID;
     const _tierMult=getTierMult(p.soloQ?.tier);
     const rth=scaleTh(_baseTh,_tierMult);
-    const _tierName=tierEs(p.soloQ?.tier||'DIAMOND');
+    const _tierName=tierName(p.soloQ?.tier||'DIAMOND');
     function clsV(v,g,ok){return v>=g?'var(--green)':v>=(ok*.85)?'var(--text)':v>=(ok*.6)?'var(--gold)':'var(--red)';}
     function clsD2(v,ok,bad){return v<=ok?'var(--green)':v<=bad?'var(--gold)':'var(--red)';}
     const streak=calcStreak(_statsPool);
@@ -2695,7 +3000,7 @@ function buildCard(p,idx){
 
   // Matches
   const filterOpts=['all','solo','flex','aram','arena','caos','win','lose'].map(f=>
-    `<button class="chip${p.filterStat===f?' active':''}" onclick="setFilter(${idx},'${f}')">${{all:'ALL',solo:'SOLO',flex:'FLEX',aram:'ARAM',arena:'ARENA',caos:'CAOS',win:'WIN',lose:'LOSE'}[f]}</button>`
+    `<button class="chip${p.filterStat===f?' active':''}" onclick="setFilter(${idx},'${f}')">${T[LANG].matchFilters[f]||f}</button>`
   ).join('');
   const _allPool=[...new Map([...(p.matchesSolo||[]),...(p.matchesFlex||[]),...(p.matchesAram||[]),...(p.matchesArena||[]),...(p.matchesCaos||[])].map(m=>[m._matchId,m])).values()];
   const basePool=p.filterStat==='solo'?(p.matchesSolo||[]):p.filterStat==='flex'?(p.matchesFlex||[]):p.filterStat==='aram'?(p.matchesAram||[]):p.filterStat==='arena'?(p.matchesArena||[]):p.filterStat==='caos'?(p.matchesCaos||[]):_allPool;
@@ -2727,7 +3032,7 @@ function buildCard(p,idx){
       const aExtras=[aDmg,aVis,aGold].filter(Boolean).join(' · ');
       const _aRi=_rankMap.get(a.puuid)||{rank:5,score:50};const aGr=scoreToGrade(_aRi.score);
       return`<div class="ally-row">
-        <span class="ally-pos" title="${_roleEs(_normR(a.teamPosition))}">${_posIcon(a.teamPosition)}</span>
+        <span class="ally-pos" title="${_roleL(_normR(a.teamPosition))}">${_posIcon(a.teamPosition)}</span>
         <img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${a.championName}.png" class="ally-champ" loading="lazy" onerror="this.style.display='none'" title="${a.championName}">
         ${!isShort?`<span class="ally-rnk" style="color:${_rkC(_aRi.rank)}">${_rkL(_aRi.rank)}</span><span class="ally-grd" style="color:${aGr.c}">${aGr.g}</span>`:`<span class="ally-rnk" style="color:var(--text3)">—</span>`}
         <span class="ally-kda">${a.kills}/<span style="color:var(--red)">${a.deaths}</span>/${a.assists}</span>
@@ -2749,7 +3054,7 @@ function buildCard(p,idx){
       const eExtras=[eDmg,eVis,eGold].filter(Boolean).join(' · ');
       const _eRi=_rankMap.get(e.puuid)||{rank:5,score:50};const eGr=scoreToGrade(_eRi.score);
       return`<div class="ally-row">
-        <span class="ally-pos" title="${_roleEs(_normR(e.teamPosition))}">${_posIcon(e.teamPosition)}</span>
+        <span class="ally-pos" title="${_roleL(_normR(e.teamPosition))}">${_posIcon(e.teamPosition)}</span>
         <img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${e.championName}.png" class="ally-champ" loading="lazy" onerror="this.style.display='none'" title="${e.championName}">
         ${!isShort?`<span class="ally-rnk" style="color:${_rkC(_eRi.rank)}">${_rkL(_eRi.rank)}</span><span class="ally-grd" style="color:${eGr.c}">${eGr.g}</span>`:`<span class="ally-rnk" style="color:var(--text3)">—</span>`}
         <span class="ally-kda">${e.kills}/<span style="color:var(--red)">${e.deaths}</span>/${e.assists}</span>
@@ -2814,7 +3119,7 @@ function buildCard(p,idx){
 
   // Analysis — builds a panel for a given match set
   function buildAdvicePanel(matchSet, role, champType, queueLabel, queueData, tier=null, puuid=null, tierFn=null){
-    if(!matchSet||!matchSet.length) return `<div class="loading-ph">// SIN PARTIDAS DE ${queueLabel}</div>`;
+    if(!matchSet||!matchSet.length) return `<div class="loading-ph">${LANG==='en'?`// NO ${queueLabel} GAMES`:`// SIN PARTIDAS DE ${queueLabel}`}</div>`;
     const s2=calcStats({matches:matchSet});
     if(!s2) return `<div class="loading-ph">// SIN DATOS</div>`;
     // Adaptive score + dims: cada partida evaluada con su rol y champType real
@@ -2837,8 +3142,8 @@ function buildCard(p,idx){
     const roleFreqArr=getRoleFreq(matchSet);
     const isMultiRole=roleFreqArr.length>1&&roleFreqArr[1][1]/matchSet.length>=0.15;
     const multiRoleHtml=isMultiRole?`<div class="insight" style="border-left-color:var(--purple);background:rgba(168,85,247,.06);margin-bottom:12px">
-      <span style="color:var(--purple);font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:1px">EVALUACIÓN MULTI-ROL</span><br>
-      <span>Múltiples roles detectados: ${roleFreqArr.map(([r,c])=>`<strong>${_roleEs(r)}</strong> (${c}G)`).join(', ')}. El análisis usa los umbrales de cada rol por partida.</span>
+      <span style="color:var(--purple);font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:1px">${T[LANG].multiRoleEval}</span><br>
+      <span>${T[LANG].multiRoleMsg}: ${roleFreqArr.map(([r,c])=>`<strong>${_roleL(r)}</strong> (${c}G)`).join(', ')}. ${LANG==='en'?'Analysis uses each role\'s thresholds per game.':'El análisis usa los umbrales de cada rol por partida.'}</span>
     </div>`:'';
     const _seed=Math.floor(Date.now()/86400000)+(puuid?puuid.split('').reduce((a,c,i)=>a+c.charCodeAt(0)*(i+1),0)%10000:0);
     const sugs=autoSuggest(s2,role,champType,tier,_seed);
@@ -2901,7 +3206,7 @@ function buildCard(p,idx){
     if(queueData){
       const noR=['MASTER','GRANDMASTER','CHALLENGER'];
       const tier=queueData.tier;
-      const tierStr=noR.includes(tier)?tierEs(tier):`${tierEs(tier)} ${queueData.rank}`;
+      const tierStr=noR.includes(tier)?tierName(tier):`${tierName(tier)} ${queueData.rank}`;
       const w=queueData.wins||0,l=queueData.losses||0,tot=w+l;
       const wr=tot>0?Math.round(w/tot*100):0;
       rankSummary=`<div class="advice-rank-banner">
@@ -2926,49 +3231,50 @@ function buildCard(p,idx){
     const avoid=champList.filter(c=>c.g>=3&&c.wr<=45).sort((a,b)=>a.wr-b.wr).slice(0,4);
     const _champPoolSize=matchSet.length;
     const champInner=(playMore.length||avoid.length)?`
-      ${playMore.length?`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--green);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:6px">✅ JUEGA MÁS (WR ≥55%)</div>${playMore.map(c=>`<div class="stat-row"><span class="sr-k">${c.n}</span><span class="sr-v" style="color:var(--green)">${c.wr}% WR · ${c.g}G · KDA ${c.kda}</span></div>`).join('')}</div>`:''}
-      ${avoid.length?`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--red);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:6px">❌ EVITA EN RANKED (WR ≤45%)</div>${avoid.map(c=>`<div class="stat-row"><span class="sr-k">${c.n}</span><span class="sr-v" style="color:var(--red)">${c.wr}% WR · ${c.g}G</span></div>`).join('')}</div>`:''}
+      ${playMore.length?`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--green);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:6px">${LANG==='en'?'✅ PLAY MORE (WR ≥55%)':'✅ JUEGA MÁS (WR ≥55%)'}</div>${playMore.map(c=>`<div class="stat-row"><span class="sr-k">${c.n}</span><span class="sr-v" style="color:var(--green)">${c.wr}% WR · ${c.g}G · KDA ${c.kda}</span></div>`).join('')}</div>`:''}
+      ${avoid.length?`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--red);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:6px">${LANG==='en'?'❌ AVOID IN RANKED (WR ≤45%)':'❌ EVITA EN RANKED (WR ≤45%)'}</div>${avoid.map(c=>`<div class="stat-row"><span class="sr-k">${c.n}</span><span class="sr-v" style="color:var(--red)">${c.wr}% WR · ${c.g}G</span></div>`).join('')}</div>`:''}
     `:'';
     // Humor/sarcasm block
     const humorLines=[];
     if(adaptTotal<35){
-      const msgs=['Las métricas indican margen de mejora significativo — lo cual es una buena noticia.','Los números son directos: hay trabajo por hacer. La parte difícil ya pasó, que es verlos.','Reinstalar no cambia las estadísticas, pero revisar los replays sí.','Los números no mienten — y eso, paradójicamente, es lo más útil que pueden hacer.'];
+      const msgs=LANG==='en'?['The metrics indicate significant room for improvement — which is actually good news.','The numbers are direct: there\'s work to do. The hard part already happened: seeing them.','Reinstalling doesn\'t change the stats, but reviewing replays does.','Numbers don\'t lie — and that, paradoxically, is the most useful thing they can do.']:['Las métricas indican margen de mejora significativo — lo cual es una buena noticia.','Los números son directos: hay trabajo por hacer. La parte difícil ya pasó, que es verlos.','Reinstalar no cambia las estadísticas, pero revisar los replays sí.','Los números no mienten — y eso, paradójicamente, es lo más útil que pueden hacer.'];
       humorLines.push(msgs[Math.floor(Math.random()*msgs.length)]);
     } else if(adaptTotal<48){
-      const msgs=['El elo no miente. Tú sí, pero el elo no.','¿Has considerado jugar otra línea? Pregunta sincera.','El sistema te ubicó aquí en base al rendimiento histórico. El sistema es coherente.','Con este rendimiento, el ascenso es una promesa que se renueva cada temporada.'];
+      const msgs=LANG==='en'?['The elo doesn\'t lie. You do, but the elo doesn\'t.','Have you considered playing a different lane? Sincere question.','The system placed you here based on historical performance. The system is consistent.','At this performance level, promotion is a promise that renews every season.']:['El elo no miente. Tú sí, pero el elo no.','¿Has considerado jugar otra línea? Pregunta sincera.','El sistema te ubicó aquí en base al rendimiento histórico. El sistema es coherente.','Con este rendimiento, el ascenso es una promesa que se renueva cada temporada.'];
       humorLines.push(msgs[Math.floor(Math.random()*msgs.length)]);
     } else if(adaptTotal>=75){
-      const msgs=['Esto sí tiene nivel. Cuidado con la soberbia — LoL tiene una forma especial de bajarte los humos.','Stats de élite. El equipo lo sabe aunque no te vote MVP.','¿Y por qué no estás en Masters? Pregunta legítima.'];
+      const msgs=LANG==='en'?['Now this has some level to it. Watch the ego — LoL has a special way of humbling you.','Elite stats. The team knows it even if they don\'t vote you MVP.','So why aren\'t you in Masters? Legitimate question.']:['Esto sí tiene nivel. Cuidado con la soberbia — LoL tiene una forma especial de bajarte los humos.','Stats de élite. El equipo lo sabe aunque no te vote MVP.','¿Y por qué no estás en Masters? Pregunta legítima.'];
       humorLines.push(msgs[Math.floor(Math.random()*msgs.length)]);
     }
-    if(s2.avgDeaths>=6){humorLines.push(`${s2.avgDeaths.toFixed(1)} muertes por partida es tiempo considerable fuera del juego — reducirlas tiene impacto directo en el resultado.`);}
-    if(s2.wr<45&&s2.games>=8){humorLines.push(`Con ${s2.games} partidas de muestra y este WR, es un patrón más que una racha. Hay algo sistemático que identificar.`);}
-    if(s2.kp<45&&(role==='SUPPORT'||role==='JUNGLE')){humorLines.push('KP bajo en este rol sugiere estar desconectado del flujo del equipo — participar más en objetivos puede cambiar eso.');}
+    if(s2.avgDeaths>=6){humorLines.push(LANG==='en'?`${s2.avgDeaths.toFixed(1)} deaths per game is considerable time off the map — reducing them has a direct impact on results.`:`${s2.avgDeaths.toFixed(1)} muertes por partida es tiempo considerable fuera del juego — reducirlas tiene impacto directo en el resultado.`);}
+    if(s2.wr<45&&s2.games>=8){humorLines.push(LANG==='en'?`With ${s2.games} games in the sample and this WR, it's a pattern more than a streak. There's something systematic to identify.`:`Con ${s2.games} partidas de muestra y este WR, es un patrón más que una racha. Hay algo sistemático que identificar.`);}
+    if(s2.kp<45&&(role==='SUPPORT'||role==='JUNGLE')){humorLines.push(LANG==='en'?'Low KP in this role suggests being disconnected from the team\'s flow — participating more in objectives can change that.':'KP bajo en este rol sugiere estar desconectado del flujo del equipo — participar más en objetivos puede cambiar eso.');}
+    const _scholarLabel=LANG==='en'?'🎭 The Scholar opines:':'🎭 El Erudito opina:';
     const humorHtml=humorLines.length?`<div class="insight" style="border-left-color:var(--purple);background:rgba(168,85,247,.06);font-style:italic">
-      <span style="color:var(--purple)">🎭 El Erudito opina:</span><br><span>${humorLines.join('<br><br>')}</span>
+      <span style="color:var(--purple)">${_scholarLabel}</span><br><span>${humorLines.join('<br><br>')}</span>
     </div>`:'';
     return`<div class="apanel">
       ${multiRoleHtml}
       ${rankSummary}
       ${humorHtml}
       ${focusHtml}
-      <details class="adv-collapsible" open><summary>Consejos del Erudito</summary>
+      <details class="adv-collapsible" open><summary>${LANG==='en'?"Scholar's Insights":'Consejos del Erudito'} <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">(${LANG==='en'?`based on ${matchSet.length} games`:`en base a ${matchSet.length} partidas`})</span></summary>
       <div class="ai-chips">
-        ${[['general','Analiza mis partidas recientes'],['skill','¿Cuál es mi nivel de habilidad?'],['team','¿Cómo está mi suerte de equipo?'],['champ','¿Qué campeón debería jugar?']].map(([t,lbl])=>`<button class="ai-chip" onclick="callAIAnalysis('${puuid}','${t}')"><span class="ai-spark">✦</span>${lbl}</button>`).join('')}
+        ${(LANG==='en'?[['general','Analyze my recent games'],['skill','What is my skill level?'],['team','How is my team luck?'],['champ','What champion should I play?']]:[['general','Analiza mis partidas recientes'],['skill','¿Cuál es mi nivel de habilidad?'],['team','¿Cómo está mi suerte de equipo?'],['champ','¿Qué campeón debería jugar?']]).map(([t,lbl])=>`<button class="ai-chip" onclick="callAIAnalysis('${puuid}','${t}')"><span class="ai-spark">✦</span>${lbl}</button>`).join('')}
       </div>
       <div id="ai-result-${(puuid||'x').slice(-8)}"></div>
-      ${sugs.map(sg=>`<div class="insight ${sg.tp}"><span>${sg.tx}</span>${sg.goal?`<div style="margin-top:6px;font-size:11px;font-family:'Share Tech Mono',monospace;color:var(--cyan);opacity:.85">▸ OBJETIVO: ${sg.goal}</div>`:''}</div>`).join('')}
+      ${sugs.map(sg=>`<div class="insight ${sg.tp}"><span>${sg.tx}</span>${sg.goal?`<div style="margin-top:6px;font-size:11px;font-family:'Share Tech Mono',monospace;color:var(--cyan);opacity:.85">▸ ${LANG==='en'?'GOAL':'OBJETIVO'}: ${sg.goal}</div>`:''}</div>`).join('')}
       </details>
-      ${(()=>{const _lm=matchSet[0];if(!_lm)return'';const _lmR=({TOP:'TOP',JUNGLE:'JUNGLE',MIDDLE:'MID',BOTTOM:'BOT',UTILITY:'SUPPORT'})[_lm.teamPosition]||role;const _lmCt=detectChampType(_lm.championName,_lm.teamPosition);const _lmTips=autoSuggestMatch(_lm,_lmR,_lmCt,tier);const isRm=_lm._mins<=3&&_lm._surrender;const isShort=!isRm&&_lm._mins<10;const resC=isRm||isShort?'var(--text3)':_lm.win?'var(--green)':'var(--red)';const resL=isRm?'RC':isShort?'AFK':_lm.win?'WIN':'LOSE';const dt=_lm._gameCreation?new Date(_lm._gameCreation).toLocaleDateString('es-CL',{day:'2-digit',month:'short'}):'';const _resCls=isRm||isShort?'rehecha':_lm.win?'win':'lose';const _lmMin=Math.max(1,_lm._mins||1);const _lmKda=_lm.deaths===0?(_lm.kills+_lm.assists):((_lm.kills+_lm.assists)/_lm.deaths);const _lmGs={kda:_lmKda,csMin:_lm._csMin||0,vision:(_lm.visionScore||0)/_lmMin,dmg:(_lm.totalDamageDealtToChampions||0)/_lmMin,avgDeaths:_lm.deaths,kp:_lm._kp||0,goldMin:_lm._goldMin||0};const _lmGr=!isShort?scoreToGrade(computeScore(_lmGs,_lmR,_lmCt,tier).total):null;const _lmKdaC=_lmKda>=4?'var(--green)':_lmKda>=2.5?'var(--cyan)':'var(--text3)';const _lmIt=[_lm.item0,_lm.item1,_lm.item2,_lm.item3,_lm.item4,_lm.item5,_lm.item6];const _lmItHtml=_lmIt.some(id=>id&&id>0)?`<div style="display:flex;gap:2px;align-items:center;flex:1;justify-content:center">${_lmIt.map(id=>id&&id>0?`<img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/item/${id}.png" class="mi-item" loading="lazy" onerror="this.style.display='none'">`:`<span class="mi-item-empty"></span>`).join('')}</div>`:'';const _rowHtml=`<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:4px;background:var(--bg3);margin-bottom:8px;overflow:hidden"><div class="mres ${_resCls}" style="writing-mode:vertical-rl;height:38px;font-size:10px;padding:2px 3px;flex-shrink:0">${resL}</div><img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${_lm.championName}.png" style="width:36px;height:36px;border-radius:4px;border:1px solid var(--border);flex-shrink:0" loading="lazy" onerror="this.style.display='none'" title="${_lm.championName}">${_lmGr?`<span style="font-size:16px;font-weight:800;font-family:'Orbitron',monospace;color:${_lmGr.c};flex-shrink:0">${_lmGr.g}</span>`:''}<span style="font-size:15px;font-weight:700;font-family:'Share Tech Mono',monospace;flex-shrink:0">${_lm.kills}/<span style="color:var(--red)">${_lm.deaths}</span>/${_lm.assists}</span><span style="font-size:12px;font-family:'Share Tech Mono',monospace;color:${_lmKdaC};flex-shrink:0">KDA ${_lmKda.toFixed(2)}</span><span style="font-size:12px;color:var(--text3);font-family:'Share Tech Mono',monospace;flex-shrink:0">${_lm._mins}m</span>${_lmItHtml}<div style="display:flex;align-items:center;gap:3px;flex-shrink:0;margin-left:auto">${_lm.totalDamageDealtToChampions?`<span class="stat-pill sp-dmg">⚔${(_lm.totalDamageDealtToChampions/1000).toFixed(1)}k</span>`:''}<span class="stat-pill sp-gold">${(_lm.goldEarned/1000).toFixed(1)}k</span><span class="stat-pill sp-vis">👁${_lm.visionScore}</span><span class="stat-pill sp-cs">${_lm._csMin.toFixed(1)}</span></div></div>`;return`<details class="adv-collapsible"><summary>Última partida <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">${_lm.championName} · <span style="color:${resC};font-weight:700">${resL}</span> · ${Math.round(_lm._mins||0)}min${dt?' · '+dt:''}</span></summary><div style="padding-top:6px">${_rowHtml}${_lmTips.map(sg=>`<div class="insight ${sg.tp}"><span>${sg.tx}</span>${sg.goal?`<div style="margin-top:6px;font-size:11px;font-family:'Share Tech Mono',monospace;color:var(--cyan);opacity:.85">▸ OBJETIVO: ${sg.goal}</div>`:''}</div>`).join('')}</div></details>`;})()}
-      ${tendRows.length?`<details class="adv-collapsible"><summary>Tendencias <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">(últimas ${matchSet.length} partidas ${queueLabel})</span></summary>${tendRows.join('')}</details>`:''}
-      ${champInner?`<details class="adv-collapsible"><summary>Campeones: ¿qué jugar? <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">(últimas ${_champPoolSize} partidas ${queueLabel})</span></summary>${champInner}</details>`:''}
+      ${(()=>{const _lm=matchSet[0];if(!_lm)return'';const _lmR=({TOP:'TOP',JUNGLE:'JUNGLE',MIDDLE:'MID',BOTTOM:'BOT',UTILITY:'SUPPORT'})[_lm.teamPosition]||role;const _lmCt=detectChampType(_lm.championName,_lm.teamPosition);const _lmTips=autoSuggestMatch(_lm,_lmR,_lmCt,tier);const isRm=_lm._mins<=3&&_lm._surrender;const isShort=!isRm&&_lm._mins<10;const resC=isRm||isShort?'var(--text3)':_lm.win?'var(--green)':'var(--red)';const resL=isRm?'RC':isShort?'AFK':_lm.win?'WIN':'LOSE';const dt=_lm._gameCreation?new Date(_lm._gameCreation).toLocaleDateString('es-CL',{day:'2-digit',month:'short'}):'';const _resCls=isRm||isShort?'rehecha':_lm.win?'win':'lose';const _lmMin=Math.max(1,_lm._mins||1);const _lmKda=_lm.deaths===0?(_lm.kills+_lm.assists):((_lm.kills+_lm.assists)/_lm.deaths);const _lmGs={kda:_lmKda,csMin:_lm._csMin||0,vision:(_lm.visionScore||0)/_lmMin,dmg:(_lm.totalDamageDealtToChampions||0)/_lmMin,avgDeaths:_lm.deaths,kp:_lm._kp||0,goldMin:_lm._goldMin||0};const _lmGr=!isShort?scoreToGrade(computeScore(_lmGs,_lmR,_lmCt,tier).total):null;const _lmKdaC=_lmKda>=4?'var(--green)':_lmKda>=2.5?'var(--cyan)':'var(--text3)';const _lmIt=[_lm.item0,_lm.item1,_lm.item2,_lm.item3,_lm.item4,_lm.item5,_lm.item6];const _lmItHtml=_lmIt.some(id=>id&&id>0)?`<div style="display:flex;gap:2px;align-items:center;flex:1;justify-content:center">${_lmIt.map(id=>id&&id>0?`<img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/item/${id}.png" class="mi-item" loading="lazy" onerror="this.style.display='none'">`:`<span class="mi-item-empty"></span>`).join('')}</div>`:'';const _rowHtml=`<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:4px;background:var(--bg3);margin-bottom:8px;overflow:hidden"><div class="mres ${_resCls}" style="writing-mode:vertical-rl;height:38px;font-size:10px;padding:2px 3px;flex-shrink:0">${resL}</div><img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${_lm.championName}.png" style="width:36px;height:36px;border-radius:4px;border:1px solid var(--border);flex-shrink:0" loading="lazy" onerror="this.style.display='none'" title="${_lm.championName}">${_lmGr?`<span style="font-size:16px;font-weight:800;font-family:'Orbitron',monospace;color:${_lmGr.c};flex-shrink:0">${_lmGr.g}</span>`:''}<span style="font-size:15px;font-weight:700;font-family:'Share Tech Mono',monospace;flex-shrink:0">${_lm.kills}/<span style="color:var(--red)">${_lm.deaths}</span>/${_lm.assists}</span><span style="font-size:12px;font-family:'Share Tech Mono',monospace;color:${_lmKdaC};flex-shrink:0">KDA ${_lmKda.toFixed(2)}</span><span style="font-size:12px;color:var(--text3);font-family:'Share Tech Mono',monospace;flex-shrink:0">${_lm._mins}m</span>${_lmItHtml}<div style="display:flex;align-items:center;gap:3px;flex-shrink:0;margin-left:auto">${_lm.totalDamageDealtToChampions?`<span class="stat-pill sp-dmg">⚔${(_lm.totalDamageDealtToChampions/1000).toFixed(1)}k</span>`:''}<span class="stat-pill sp-gold">${(_lm.goldEarned/1000).toFixed(1)}k</span><span class="stat-pill sp-vis">👁${_lm.visionScore}</span><span class="stat-pill sp-cs">${_lm._csMin.toFixed(1)}</span></div></div>`;return`<details class="adv-collapsible"><summary>${LANG==='en'?'Last Match':'Última partida'} <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">${_lm.championName} · <span style="color:${resC};font-weight:700">${resL}</span> · ${Math.round(_lm._mins||0)}min${dt?' · '+dt:''}</span></summary><div style="padding-top:6px">${_rowHtml}${_lmTips.map(sg=>`<div class="insight ${sg.tp}"><span>${sg.tx}</span>${sg.goal?`<div style="margin-top:6px;font-size:11px;font-family:'Share Tech Mono',monospace;color:var(--cyan);opacity:.85">▸ ${LANG==='en'?'GOAL':'OBJETIVO'}: ${sg.goal}</div>`:''}</div>`).join('')}</div></details>`;})()}
+      ${tendRows.length?`<details class="adv-collapsible"><summary>${LANG==='en'?'Trends':'Tendencias'} <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">(${LANG==='en'?'last':'últimas'} ${matchSet.length} ${LANG==='en'?'games':'partidas'} ${queueLabel})</span></summary>${tendRows.join('')}</details>`:''}
+      ${champInner?`<details class="adv-collapsible"><summary>${LANG==='en'?'Champions: what to play?':'Campeones: ¿qué jugar?'} <span style="color:var(--text3);font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:400;letter-spacing:0">(${LANG==='en'?'last':'últimas'} ${_champPoolSize} ${LANG==='en'?'games':'partidas'} ${queueLabel})</span></summary>${champInner}</details>`:''}
     </div>`;
   }
 
   const aq=p.adviceQueue||'solo';
   const ar=p.adviceRange||'recent';
   const advTabs=['solo','flex'].map(q=>
-    `<button class="adv-tab${aq===q?' active':''}" onclick="setAdviceQueue(${idx},'${q}')">${q==='solo'?'SOLO/DUO':'FLEX'}</button>`
+    `<button class="adv-tab${aq===q?' active':''}" onclick="setAdviceQueue(${idx},'${q}')">${T[LANG].advTabs[q]||q}</button>`
   ).join('');
 
   const _rawPool=aq==='flex'?(p.matchesFlex||[]):(p.matchesSolo||[]);
@@ -2985,8 +3291,8 @@ function buildCard(p,idx){
       }).join('')
     :'';
   const rangeRow=rangeChips?`<div class="adv-tabs-row" style="margin-top:4px;margin-bottom:2px">${rangeChips}</div>`:'';
-  const _noDataMsg=`<div class="loading-ph" style="min-height:120px">// Sin partidas de ${aq==='flex'?'Flex':'Solo/Duo'} — agrega al jugador o carga más partidas</div>`;
-  const adviceBody=_rawPool.length?rangeRow+buildAdvicePanel(_pool,_role,_ct,aq==='flex'?'FLEX':'SOLO/DUO',_ranked,_tier,p.puuid):_noDataMsg;
+  const _noDataMsg=`<div class="loading-ph" style="min-height:120px">${LANG==='en'?`// No ${aq==='flex'?'Flex':'Solo/Duo'} games — add the player or load more`:`// Sin partidas de ${aq==='flex'?'Flex':'Solo/Duo'} — agrega al jugador o carga más partidas`}</div>`;
+  const adviceBody=_rawPool.length?rangeRow+buildAdvicePanel(_pool,_role,_ct,T[LANG].advTabs[aq]||aq,_ranked,_tier,p.puuid):_noDataMsg;
 
   let analysisContent=`<div class="adv-tabs-row">${advTabs}</div>${adviceBody}`;
 
@@ -3170,7 +3476,7 @@ function buildCard(p,idx){
     const barW=Math.round(a.games/maxAllyG*80)+20;
     const _avHtml=rank?.icon?`<img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/profileicon/${rank.icon}.png" style="width:40px;height:40px;border-radius:50%;border:2px solid ${wrC};object-fit:cover;flex-shrink:0" loading="lazy" onerror="this.style.opacity='.3'">`:`<div style="width:40px;height:40px;border-radius:50%;background:var(--bg3);border:2px solid ${wrC};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;color:var(--text)">${unknown?'?':a.name[0].toUpperCase()}</div>`;
     const _rkTierCol=rank?.tier?getTierCol(rank.tier):'var(--text3)';
-    const _rkTierStr=rank?.tier?`${tierEs(rank.tier)}${rank.rank?' '+rank.rank:''}`:null;
+    const _rkTierStr=rank?.tier?`${tierName(rank.tier)}${rank.rank?' '+rank.rank:''}`:null;
     const _rkLpStr=rank?.lp!=null?`${rank.lp} LP`:null;
     const _lvStr=rank?.level?`LV.${rank.level}`:'';
     return`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
@@ -3178,7 +3484,7 @@ function buildCard(p,idx){
       <div style="flex:1.4;min-width:0">
         <div style="font-size:13px;color:${unknown?'var(--text3)':'var(--text)'};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${riotId}</div>
         ${rank?`<div style="display:flex;align-items:baseline;gap:5px;margin-top:3px;flex-wrap:wrap">
-          ${_rkTierStr?`<span style="font-size:12px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${_rkTierCol}">${_rkTierStr}</span>`:'<span style="font-size:11px;color:var(--text3);font-family:\'Share Tech Mono\',monospace">Sin rango</span>'}
+          ${_rkTierStr?`<span style="font-size:12px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${_rkTierCol}">${_rkTierStr}</span>`:`<span style="font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace">${T[LANG].unranked}</span>`}
           ${_rkLpStr?`<span style="font-size:11px;color:var(--text2);font-family:'Share Tech Mono',monospace">${_rkLpStr}</span>`:''}
           ${_lvStr?`<span style="font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace">· ${_lvStr}</span>`:''}
         </div>`:''}
@@ -3249,8 +3555,8 @@ function buildCard(p,idx){
       <div style="width:60px"></div>
     </div>
     ${visRows}${extraAllySection}
-    <div style="padding:8px 0;font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace;text-align:center">// Rank mostrado para los 15 más frecuentes · <span style="cursor:pointer;color:var(--cyan);text-decoration:underline" onclick="fetchAllyRanksForChem(${idx})">Actualizar ranks</span></div>
-  </div>`:`<div class="loading-ph" style="padding:24px">// Nadie ha jugado lo suficiente contigo en esta cola — o tú con nadie</div>`}`;
+    <div style="padding:8px 0;font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace;text-align:center">${T[LANG].chemRankNote} · <span style="cursor:pointer;color:var(--cyan);text-decoration:underline" onclick="fetchAllyRanksForChem(${idx})">${T[LANG].refreshRanks}</span></div>
+  </div>`:`<div class="loading-ph" style="padding:24px">${T[LANG].chemNoData}</div>`}`;
 
   const content={stats:statsContent,campeones:champsContent,gráficas:graphsContent,partidas:matchesContent,'análisis':analysisContent,'química':chemContent};
 
@@ -3341,8 +3647,8 @@ function buildCard(p,idx){
     ${isSolo?scoreBand:''}
     ${badgesHtml}
     <div class="rtype-row">
-      <span class="rbadge rb-${p.role||'UNKNOWN'}">${_roleEs(p.role)||'???'}</span>
-      <button class="edit-btn" onclick="toggleEdit(${idx})">✏ editar rol</button>
+      <span class="rbadge rb-${p.role||'UNKNOWN'}">${_roleL(p.role)||'???'}</span>
+      <button class="edit-btn" onclick="toggleEdit(${idx})">${T[LANG].editRole}</button>
     </div>
     <div class="edit-panel${p.editOpen?' open':''}" id="edit-${idx}">
       <div class="edit-row"><label>ROL:</label><select onchange="setRole(${idx},this.value)">${roleOpts}</select></div>
@@ -3351,7 +3657,7 @@ function buildCard(p,idx){
   const rightHtml=`
     <div class="tabs">${tabs}</div>
     <div id="tc-${idx}" style="min-height:220px">${content[p.activeTab]||statsContent}</div>
-    <div class="cfoot">// UPDATED ${p.updated?p.updated.toLocaleTimeString('es-CL'):'—'}</div>`;
+    <div class="cfoot">// ${T[LANG].updated} ${p.updated?p.updated.toLocaleTimeString(LANG==='en'?'en-US':'es-CL'):'—'}</div>`;
   div.innerHTML=isSolo
     ?`<div class="card-left">${leftHtml}</div><div class="card-right">${rightHtml}</div>`
     :`${leftHtml}${rightHtml}`;
@@ -3486,6 +3792,7 @@ function loadPlayers(){
       activeTab:'análisis',filterStat:'all',editOpen:false,filterChamp:'',expandedChamp:'',champQFilter:null,dayFilter:'all',
       _ghost:true,updated:null});});
     renderAll();
+    setTimeout(()=>{players.forEach((p,i)=>{if(p._ghost&&!p._loadFailed)refreshPlayer(i);});},0);
   }catch(e){}
 }
 function showMoreMatches(idx){players[idx].matchVisCount=(players[idx].matchVisCount||10)+10;rebuildCard(idx,true);}
@@ -3511,7 +3818,11 @@ async function refreshPlayer(idx){
   const _rPuuid=p.puuid;
   const count=getCount();
   // Salir del estado ghost para mostrar el indicador de carga en la card normal
-  if(p._ghost||p._loadFailed){p._ghost=false;p._loadFailed=false;p._loadProgress=1;p._loadLabel='Solo Q';rebuildCard(idx);}
+  if(p._ghost||p._loadFailed){
+    const _gb=document.getElementById(`ghost-body-${idx}`);
+    if(_gb)_gb.innerHTML=`<div style="padding:8px 0;color:var(--cyan);font-family:'Orbitron',monospace;font-size:13px;letter-spacing:2px;animation:blink 1.2s ease-in-out infinite">⚔ ${T[LANG].loading}</div>`;
+    p._ghost=false;p._loadFailed=false;p._loadProgress=1;p._loadLabel='Solo Q';rebuildCard(idx);
+  }
   setLoadProgress(idx,1,'Solo Q');
   const ranked=await rFetch(`https://${PLAT}.api.riotgames.com/lol/league/v4/entries/by-puuid/${_rPuuid}`);
   // Cargar SoloQ primero y mostrar resultado de inmediato
@@ -3596,7 +3907,7 @@ function renderComp(){
     const fullScore=computeScore(s,_compRole,_compCT,sqTier);
     const _dispRanked=p.soloQ||p.flexQ||null;
     const _isFlexOnly=!p.soloQ&&!!p.flexQ;
-    const rankStr=_dispRanked?(noRankC.includes(_dispRanked.tier)?tierEs(_dispRanked.tier):`${tierEs(_dispRanked.tier)} ${_dispRanked.rank}`):'Sin rango';
+    const rankStr=_dispRanked?(noRankC.includes(_dispRanked.tier)?tierName(_dispRanked.tier):`${tierName(_dispRanked.tier)} ${_dispRanked.rank}`):T[LANG].unranked;
     const lp=_dispRanked?.leaguePoints!=null?`${_dispRanked.leaguePoints} LP`:'';
     const col=pColors[i%pColors.length];
     // Archetype detection
@@ -3619,7 +3930,7 @@ function renderComp(){
       <button onclick="removePlayer(${i})" title="Quitar jugador" style="position:absolute;top:8px;right:8px;z-index:10;background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;line-height:1;padding:3px 6px;border-radius:4px" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">✕</button>
       <div style="display:flex;justify-content:center;margin-bottom:12px">${av}</div>
       <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:${col};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.gameName}</div>
-      <div style="font-size:13px;color:var(--text3);font-family:'Share Tech Mono',monospace;margin-top:4px">#${p.tagLine} · <select onchange="setRole(${i},this.value)" style="background:transparent;border:none;color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:13px;cursor:pointer;padding:0;outline:none">${['TOP','JUNGLE','MID','BOT','SUPPORT'].map(r=>`<option value="${r}"${role===r?' selected':''}>${_roleEs(r)}</option>`).join('')}</select></div>
+      <div style="font-size:13px;color:var(--text3);font-family:'Share Tech Mono',monospace;margin-top:4px">#${p.tagLine} · <select onchange="setRole(${i},this.value)" style="background:transparent;border:none;color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:13px;cursor:pointer;padding:0;outline:none">${['TOP','JUNGLE','MID','BOT','SUPPORT'].map(r=>`<option value="${r}"${role===r?' selected':''}>${_roleL(r)}</option>`).join('')}</select></div>
       <div style="margin-top:8px">
         <span style="font-size:16px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${tierCol}">${rankStr}</span>
         ${lp?`<span style="font-size:14px;color:var(--text2);font-family:'Share Tech Mono',monospace;margin-left:6px">${lp}</span>`:''}
@@ -3746,7 +4057,7 @@ function renderComp(){
     return`<div style="text-align:center;padding:14px 10px;border-left:1px solid var(--border);${isWinner?`background:${col}14;box-shadow:inset 0 0 0 1px ${col}30;`:''}transition:background .2s">
       <div style="font-family:'Orbitron',monospace;font-size:38px;font-weight:900;color:${gd.c};line-height:1">${gd.g}${isWinner?`<span style="font-size:11px;color:${col};vertical-align:super;margin-left:3px">▲</span>`:''}</div>
       <div style="font-size:15px;font-weight:700;color:var(--text);font-family:'Share Tech Mono',monospace;margin-top:5px">${adj}<span style="font-size:11px;color:var(--text3);font-weight:400">/100</span></div>
-      <div style="font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace;margin-top:3px">×${w.toFixed(2)} (${tier?tierEs(tier):'?'})</div>
+      <div style="font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace;margin-top:3px">×${w.toFixed(2)} (${tier?tierName(tier):'?'})</div>
       <div style="margin-top:8px;height:4px;background:var(--bg4);border-radius:2px"><div style="height:100%;width:${adj}%;background:${isWinner?col:gd.c};border-radius:2px;transition:width .4s"></div></div>
     </div>`;}).join(''),
   'rgba(255,212,71,.04)',
@@ -3831,35 +4142,36 @@ function detectArchetypes(dims,totalScore,s,otpPct,otpChamp,uniqueChamps){
   const deaths=s.avgDeaths||0,wr=s.wr||0;
   const C='#00e5ff',G='#00ff88',R='#ff3a5c',Au='#ffd447',Or='#ff9060',Pu='#a855f7';
   const all=[];
+  const _en=LANG==='en';
   // Score global
-  if(totalScore>=82) all.push({title:'La Amenaza Real',emoji:'🔥',desc:'Los números hablan solos. Mejor no cruzárselo en el mapa.',col:Au});
-  if(totalScore<=35) all.push({title:'El Peso del Equipo',emoji:'💀',desc:'El elo dice lo que hay. Las estadísticas confirman. El equipo ya lo sabe.',col:R});
+  if(totalScore>=82) all.push({title:_en?'The Real Threat':'La Amenaza Real',emoji:'🔥',desc:_en?'The numbers speak for themselves. Best not to cross them on the map.':'Los números hablan solos. Mejor no cruzárselo en el mapa.',col:Au});
+  if(totalScore<=35) all.push({title:_en?'The Team Weight':'El Peso del Equipo',emoji:'💀',desc:_en?'The elo says what there is. The stats confirm it. The team already knows.':'El elo dice lo que hay. Las estadísticas confirman. El equipo ya lo sabe.',col:R});
   // Daño
-  if(dmg>=78&&kda>=68) all.push({title:'El Carry Oculto',emoji:'⚔️',desc:'Daña y sobrevive para dañar más. El enemigo lo nota tarde — casi siempre demasiado tarde.',col:C});
-  if(dmg>=70&&surv<=32) all.push({title:'El Mártir Útil',emoji:'💢',desc:'Hace su trabajo. Luego muere. Y vuelve a hacerlo. Respeta el ciclo.',col:Or});
-  if(farm>=72&&dmg>=72) all.push({title:'El Bruto',emoji:'🪓',desc:'Farm, daño, más farm, más daño. No es elegante. Tampoco necesita serlo.',col:Au});
+  if(dmg>=78&&kda>=68) all.push({title:_en?'The Hidden Carry':'El Carry Oculto',emoji:'⚔️',desc:_en?'Deals damage and survives to deal more. The enemy notices too late — almost always too late.':'Daña y sobrevive para dañar más. El enemigo lo nota tarde — casi siempre demasiado tarde.',col:C});
+  if(dmg>=70&&surv<=32) all.push({title:_en?'The Useful Martyr':'El Mártir Útil',emoji:'💢',desc:_en?'Does the job. Then dies. Then does it again. Respect the cycle.':'Hace su trabajo. Luego muere. Y vuelve a hacerlo. Respeta el ciclo.',col:Or});
+  if(farm>=72&&dmg>=72) all.push({title:_en?'The Brute':'El Bruto',emoji:'🪓',desc:_en?'Farm, damage, more farm, more damage. Not elegant. Doesn\'t need to be.':'Farm, daño, más farm, más daño. No es elegante. Tampoco necesita serlo.',col:Au});
   // Supervivencia
-  if(surv>=80&&kda>=72) all.push({title:'El Intocable',emoji:'🛡️',desc:'No le pegan. Y cuando le pegan, no le importa.',col:G});
-  if(surv>=78&&dmg<=32) all.push({title:'El Inmortal Inofensivo',emoji:'🪨',desc:'No muere. Tampoco mata. Existe en perfecta neutralidad.',col:'var(--text2)'});
-  if(deaths>=6.5) all.push({title:'El Suicida Honorable',emoji:'💀',desc:'La cantidad de veces que muere bordea lo filosófico. Es casi arte.',col:R});
+  if(surv>=80&&kda>=72) all.push({title:_en?'The Untouchable':'El Intocable',emoji:'🛡️',desc:_en?"They can't hit them. And when they do, it doesn't matter.":'No le pegan. Y cuando le pegan, no le importa.',col:G});
+  if(surv>=78&&dmg<=32) all.push({title:_en?'The Harmless Immortal':'El Inmortal Inofensivo',emoji:'🪨',desc:_en?"Doesn't die. Doesn't kill either. Exists in perfect neutrality.":'No muere. Tampoco mata. Existe en perfecta neutralidad.',col:'var(--text2)'});
+  if(deaths>=6.5) all.push({title:_en?'The Honorable Suicide':'El Suicida Honorable',emoji:'💀',desc:_en?'The number of times they die borders on philosophical. It\'s almost art.':'La cantidad de veces que muere bordea lo filosófico. Es casi arte.',col:R});
   // Juego en equipo
-  if(kp>=72&&dmg<=38) all.push({title:'El Fantasma del Equipo',emoji:'👻',desc:'Siempre está en el momento, nunca en el golpe. El KP no miente.',col:Pu});
-  if(kp>=70&&kda>=68) all.push({title:'El Líder Silencioso',emoji:'🎯',desc:'Está en todas las peleas y sale bien. El equipo no sabe si es genio o disciplina.',col:C});
-  if(wr>=57&&totalScore<=63) all.push({title:'El Recurso del Equipo',emoji:'🧠',desc:'Gana más de lo que las stats sugieren. Eso se llama macro — o suerte. Difícil saber cuál.',col:G});
+  if(kp>=72&&dmg<=38) all.push({title:_en?'The Team Ghost':'El Fantasma del Equipo',emoji:'👻',desc:_en?'Always there for the moment, never for the hit. KP doesn\'t lie.':'Siempre está en el momento, nunca en el golpe. El KP no miente.',col:Pu});
+  if(kp>=70&&kda>=68) all.push({title:_en?'The Silent Leader':'El Líder Silencioso',emoji:'🎯',desc:_en?"In every fight and comes out fine. The team can't tell if it's genius or discipline.":'Está en todas las peleas y sale bien. El equipo no sabe si es genio o disciplina.',col:C});
+  if(wr>=57&&totalScore<=63) all.push({title:_en?'The Team Resource':'El Recurso del Equipo',emoji:'🧠',desc:_en?'Wins more than the stats suggest. That\'s called macro — or luck. Hard to tell which.':'Gana más de lo que las stats sugieren. Eso se llama macro — o suerte. Difícil saber cuál.',col:G});
   // Farm y visión
-  if(farm>=72&&kp<=30) all.push({title:'El Ermitaño del Carril',emoji:'🌾',desc:'El carril es su mundo. El mapa es de los demás.',col:Au});
-  if(vis>=78) all.push({title:'El Explorador',emoji:'👁️',desc:'El minimapa no tiene secretos para él. Sus aliados, en cambio, ni lo miran.',col:C});
-  if(vis<=22) all.push({title:'El Ciego',emoji:'🙈',desc:'Los wards son para los débiles, dice. Hasta que le hacen gank desde cuatro ángulos.',col:R});
+  if(farm>=72&&kp<=30) all.push({title:_en?'The Lane Hermit':'El Ermitaño del Carril',emoji:'🌾',desc:_en?'The lane is their world. The map belongs to everyone else.':'El carril es su mundo. El mapa es de los demás.',col:Au});
+  if(vis>=78) all.push({title:_en?'The Explorer':'El Explorador',emoji:'👁️',desc:_en?"The minimap has no secrets for them. Their allies, on the other hand, don't even look at it.":'El minimapa no tiene secretos para él. Sus aliados, en cambio, ni lo miran.',col:C});
+  if(vis<=22) all.push({title:_en?'The Blind One':'El Ciego',emoji:'🙈',desc:_en?"Wards are for the weak, they say. Until they get ganked from four angles.":'Los wards son para los débiles, dice. Hasta que le hacen gank desde cuatro ángulos.',col:R});
   // Campeones
-  if(otpPct>=0.42&&otpChamp) all.push({title:`OTP ${otpChamp}`,emoji:'🎯',desc:`${Math.round(otpPct*100)}% de sus partidas en ${otpChamp}. Un campeón, una vida, cero excusas.`,col:G});
-  if(uniqueChamps>=10&&otpPct<0.28) all.push({title:'El Coleccionista',emoji:'🎲',desc:`${uniqueChamps} campeones distintos. El maestro de nada, el turista de todo.`,col:Pu});
+  if(otpPct>=0.42&&otpChamp) all.push({title:`OTP ${otpChamp}`,emoji:'🎯',desc:_en?`${Math.round(otpPct*100)}% of games on ${otpChamp}. One champion, one life, zero excuses.`:`${Math.round(otpPct*100)}% de sus partidas en ${otpChamp}. Un campeón, una vida, cero excusas.`,col:G});
+  if(uniqueChamps>=10&&otpPct<0.28) all.push({title:_en?'The Collector':'El Coleccionista',emoji:'🎲',desc:_en?`${uniqueChamps} different champions. Master of none, tourist of everything.`:`${uniqueChamps} campeones distintos. El maestro de nada, el turista de todo.`,col:Pu});
   // Fallbacks
   const _mod=[kda,vis,dmg,surv].filter(v=>v>=35&&v<=65).length;
-  if(_mod>=3) all.push({title:'El Equilibrista',emoji:'⚖️',desc:'Sin puntos brillantes ni puntos oscuros. Proporciones perfectas — y perfectamente olvidables.',col:'var(--text2)'});
+  if(_mod>=3) all.push({title:_en?'The Balancer':'El Equilibrista',emoji:'⚖️',desc:_en?'No bright spots, no dark spots. Perfect proportions — and perfectly forgettable.':'Sin puntos brillantes ni puntos oscuros. Proporciones perfectas — y perfectamente olvidables.',col:'var(--text2)'});
   // Deduplicate y limitar a 3
   const seen=new Set(),result=[];
   for(const a of all){if(result.length>=3)break;if(!seen.has(a.title)){seen.add(a.title);result.push(a);}}
-  if(!result.length) result.push({title:'El Habitual',emoji:'📊',desc:'Sin rasgos extremos. Una carta en blanco. Por ahora.',col:'var(--text3)'});
+  if(!result.length) result.push({title:_en?'The Regular':'El Habitual',emoji:'📊',desc:_en?'No extreme traits. A blank card. For now.':'Sin rasgos extremos. Una carta en blanco. Por ahora.',col:'var(--text3)'});
   return result;
 }
 document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')addPlayer();});
@@ -3911,6 +4223,13 @@ function toggleTheme(){
   document.documentElement.dataset.theme=t;
   const btn=document.getElementById('themeBtn');
   if(btn)btn.textContent=t==='light'?'☀️':'🌙';
+})();
+(function initLang(){
+  const l=localStorage.getItem('loltrack_lang')||'es';
+  LANG=l;
+  const btn=document.getElementById('langBtn');
+  if(btn)btn.textContent=l==='es'?'EN':'ES';
+  _applyLangDOM(l);
 })();
 purgeExpiredCache();
 
@@ -4193,7 +4512,7 @@ async function loadHistoryMatches(idx, weeks){
   const btn=document.getElementById(btnId);
   const prog=document.getElementById('year-progress-'+idx);
   if(btn)btn.disabled=true;
-  if(prog){prog.style.display='block';prog.textContent=`⏳ Cargando ${label}...`;}
+  if(prog){prog.style.display='block';prog.textContent=LANG==='en'?`⏳ Loading ${label}...`:`⏳ Cargando ${label}...`;}
   const startTime=Math.floor((Date.now()-weeks*7*24*3600*1000)/1000);
   let start=0,allIds=[],batch;
   do{
@@ -4201,9 +4520,9 @@ async function loadHistoryMatches(idx, weeks){
     if(!Array.isArray(batch))break;
     allIds=[...allIds,...batch];
     start+=batch.length;
-    if(prog)prog.textContent=`⏳ IDs obtenidos: ${allIds.length} partidas...`;
+    if(prog)prog.textContent=LANG==='en'?`⏳ IDs fetched: ${allIds.length} games...`:`⏳ IDs obtenidos: ${allIds.length} partidas...`;
   }while(batch.length===100&&allIds.length<500);
-  if(prog)prog.textContent=`⏳ Cargando detalles de ${allIds.length} partidas...`;
+  if(prog)prog.textContent=LANG==='en'?`⏳ Loading details for ${allIds.length} games...`:`⏳ Cargando detalles de ${allIds.length} partidas...`;
   const existing=new Set([...(p.matchesSolo||[])].map(m=>m._matchId));
   let loaded=0;const newMatches=[];
   function _mergeAndSort(){
@@ -4241,11 +4560,11 @@ async function loadHistoryMatches(idx, weeks){
       })),
       _matchId:id});
     loaded++;
-    if(prog&&loaded%10===0)prog.textContent=`⏳ Cargando... ${loaded}/${allIds.length} (${Math.round(loaded/allIds.length*100)}%)`;
+    if(prog&&loaded%10===0)prog.textContent=LANG==='en'?`⏳ Loading... ${loaded}/${allIds.length} (${Math.round(loaded/allIds.length*100)}%)`:`⏳ Cargando... ${loaded}/${allIds.length} (${Math.round(loaded/allIds.length*100)}%)`;
     if(loaded%50===0){_mergeAndSort();rebuildCard(idx,true);const b=document.getElementById(btnId);if(b)b.disabled=true;}
   }
   _mergeAndSort();
-  if(prog){const pEl=document.getElementById('year-progress-'+idx);if(pEl){pEl.textContent=`✅ ${loaded} partidas de ${label} listas`;setTimeout(()=>{pEl.style.display='none';},3000);}}
+  if(prog){const pEl=document.getElementById('year-progress-'+idx);if(pEl){pEl.textContent=LANG==='en'?`✅ ${loaded} ${label} games ready`:`✅ ${loaded} partidas de ${label} listas`;setTimeout(()=>{pEl.style.display='none';},3000);}}
   if(btn){const b=document.getElementById(btnId);if(b){b.disabled=false;if(!is12w)b.textContent='✅ Año cargado';}}
   rebuildCard(idx,true);
 }
@@ -4294,13 +4613,13 @@ async function addAllyFromMatch(gameName, tagLine, btn){
 <div class="guide-overlay" id="score-info" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="guide-modal">
     <div class="guide-header">
-      <span class="guide-title">// SISTEMA DE PUNTUACIÓN</span>
+      <span class="guide-title" id="score-info-title">// SISTEMA DE PUNTUACIÓN</span>
       <button class="guide-close" onclick="document.getElementById('score-info').classList.remove('open')">✕</button>
     </div>
     <div class="guide-body">
 
       <div class="guide-section">
-        <div class="guide-section-title">Score 0 – 100</div>
+        <div class="guide-section-title" data-i18n="score0100">Score 0 – 100</div>
         <p style="font-size:13px;color:var(--text2);line-height:1.7;margin:0 0 10px">El score es un promedio ponderado de 6 dimensiones evaluadas contra umbrales calibrados en <strong style="color:var(--text)">Diamond LAS</strong> y escalados a tu elo. No mide si ganaste — mide qué tan bien cumpliste las expectativas de tu rol y rango.</p>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
           <span style="padding:3px 10px;border-radius:4px;background:rgba(255,212,71,.12);border:1px solid rgba(255,212,71,.3);font-size:12px;font-family:'Share Tech Mono',monospace;color:#ffd447">S+ ≥92</span>
@@ -4315,7 +4634,7 @@ async function addAllyFromMatch(gameName, tagLine, btn){
       </div>
 
       <div class="guide-section">
-        <div class="guide-section-title">Dimensiones</div>
+        <div class="guide-section-title" data-i18n="dims">Dimensiones</div>
         <div style="overflow-x:auto">
           <table class="guide-score-table">
             <thead>
@@ -4343,7 +4662,7 @@ async function addAllyFromMatch(gameName, tagLine, btn){
       </div>
 
       <div class="guide-section">
-        <div class="guide-section-title">Escalado por elo</div>
+        <div class="guide-section-title" data-i18n="eloScale">Escalado por elo</div>
         <p style="font-size:13px;color:var(--text2);line-height:1.7;margin:0 0 10px">Diamond es el baseline (×1.0). Los umbrales de cada tier se multiplican por un factor — así un B en Challenger es más difícil de conseguir que un B en Silver.</p>
         <div style="display:flex;flex-wrap:wrap;gap:5px">
           <span style="padding:2px 8px;border-radius:3px;background:var(--bg3);font-size:11px;font-family:'Share Tech Mono',monospace;color:#888">Iron ×0.68</span>
@@ -4360,7 +4679,7 @@ async function addAllyFromMatch(gameName, tagLine, btn){
       </div>
 
       <div class="guide-section">
-        <div class="guide-section-title">Rank en partidas</div>
+        <div class="guide-section-title" data-i18n="matchRank">Rank en partidas</div>
         <p style="font-size:13px;color:var(--text2);line-height:1.7;margin:0 0 10px">Al expandir una partida, cada jugador recibe un rank del 1 al 10 calculado con la misma fórmula, evaluando a todos contra los umbrales de su propio rol. El elo no se aplica aquí — todos compiten en igualdad de condiciones dentro de esa partida.</p>
         <div style="display:flex;flex-wrap:wrap;gap:6px">
           <span style="padding:3px 10px;border-radius:4px;background:rgba(255,212,71,.12);border:1px solid rgba(255,212,71,.3);font-size:12px;font-family:'Share Tech Mono',monospace;color:#ffd447">#1 MVP</span>
@@ -4381,13 +4700,13 @@ async function addAllyFromMatch(gameName, tagLine, btn){
 <div class="guide-overlay" id="guide" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="guide-modal">
     <div class="guide-header">
-      <span class="guide-title">// GUÍA DEL ERUDITO</span>
+      <span class="guide-title" id="guide-modal-title">// GUÍA DEL ERUDITO</span>
       <button class="guide-close" onclick="document.getElementById('guide').classList.remove('open')">✕</button>
     </div>
     <div class="guide-body">
 
       <div class="guide-section">
-        <div class="guide-section-title">Primeros pasos</div>
+        <div class="guide-section-title" data-i18n="firstSteps">Primeros pasos</div>
         <div class="guide-step">
           <div class="guide-num">1</div>
           <div class="guide-text"><strong>Busca jugadores</strong> por Riot ID con el formato <code style="background:var(--bg3);padding:2px 6px;border-radius:3px;font-family:'Share Tech Mono',monospace">Nombre#TAG</code> — por ejemplo <code style="background:var(--bg3);padding:2px 6px;border-radius:3px;font-family:'Share Tech Mono',monospace">Faker#KR1</code>. Presiona Enter o el botón + AGREGAR.</div>
@@ -4399,41 +4718,41 @@ async function addAllyFromMatch(gameName, tagLine, btn){
       </div>
 
       <div class="guide-section">
-        <div class="guide-section-title">Pestañas de la card</div>
+        <div class="guide-section-title" data-i18n="cardTabs">Pestañas de la card</div>
         <div class="guide-grid">
           <div class="guide-card">
-            <div class="guide-card-title">ANÁLISIS</div>
-            <p>Tab por defecto. Tres sub-pestañas: <strong>Solo/Duo</strong>, <strong>Flex</strong> y <strong>ARAM</strong>. Valoración −1/+1, barras por dimensión (KDA/FARM/VIS/DMG/SURV/KP) y Consejos del Erudito con análisis específico de fallas.</p>
+            <div class="guide-card-title" data-i18n="ctAnalysis">ANÁLISIS</div>
+            <p data-i18n="ctAnalysisP">Tab por defecto. Tres sub-pestañas: <strong>Solo/Duo</strong>, <strong>Flex</strong> y <strong>ARAM</strong>. Valoración −1/+1, barras por dimensión (KDA/FARM/VIS/DMG/SURV/KP) y Consejos del Erudito con análisis específico de fallas.</p>
           </div>
           <div class="guide-card">
-            <div class="guide-card-title">STATS</div>
-            <p>KDA, WR y CS/min como datos principales. Incluye racha actual, insignias automáticas (OTP, MVP, CARRY, TILTEADO…) y sparkline de daño. Verde = sobre umbral, rojo = bajo umbral para tu rol.</p>
+            <div class="guide-card-title" data-i18n="ctStats">STATS</div>
+            <p data-i18n="ctStatsP">KDA, WR y CS/min como datos principales. Incluye racha actual, insignias automáticas (OTP, MVP, CARRY, TILTEADO…) y sparkline de daño. Verde = sobre umbral, rojo = bajo umbral para tu rol.</p>
           </div>
           <div class="guide-card">
-            <div class="guide-card-title">CAMPEONES</div>
-            <p>Estadísticas agrupadas por campeón: partidas, WR, KDA y CS/min. Auto-filtra SoloQ o Flex según disponibilidad; puedes cambiarlo manualmente.</p>
+            <div class="guide-card-title" data-i18n="ctChamps">CAMPEONES</div>
+            <p data-i18n="ctChampsP">Estadísticas agrupadas por campeón: partidas, WR, KDA y CS/min. Auto-filtra SoloQ o Flex según disponibilidad; puedes cambiarlo manualmente.</p>
           </div>
           <div class="guide-card">
-            <div class="guide-card-title">PARTIDAS</div>
-            <p>Historial con filtros por resultado y rol. Haz click en una partida para expandir aliados y rivales con sus stats — desde ahí puedes agregar cualquier jugador al tracker.</p>
+            <div class="guide-card-title" data-i18n="ctMatches">PARTIDAS</div>
+            <p data-i18n="ctMatchesP">Historial con filtros por resultado y rol. Haz click en una partida para expandir aliados y rivales con sus stats — desde ahí puedes agregar cualquier jugador al tracker.</p>
           </div>
           <div class="guide-card">
-            <div class="guide-card-title">GRÁFICAS</div>
-            <p>Tendencias a lo largo del tiempo: evolución del score, WR por día de la semana y distribución de partidas. Útil para detectar patrones de rendimiento.</p>
+            <div class="guide-card-title" data-i18n="ctCharts">GRÁFICAS</div>
+            <p data-i18n="ctChartsP">Tendencias a lo largo del tiempo: evolución del score, WR por día de la semana y distribución de partidas. Útil para detectar patrones de rendimiento.</p>
           </div>
           <div class="guide-card">
-            <div class="guide-card-title">QUÍMICA</div>
-            <p>Lista de aliados frecuentes con su rango, icono y nivel. Muestra WR conjunto y cuántas partidas se jugaron en equipo. Los rangos se cargan automáticamente al abrir la pestaña.</p>
+            <div class="guide-card-title" data-i18n="ctChem">QUÍMICA</div>
+            <p data-i18n="ctChemP">Lista de aliados frecuentes con su rango, icono y nivel. Muestra WR conjunto y cuántas partidas se jugaron en equipo. Los rangos se cargan automáticamente al abrir la pestaña.</p>
           </div>
           <div class="guide-card">
-            <div class="guide-card-title">RATING</div>
-            <p>Califica a un jugador con estrellas (1–5) y escribe un comentario personal. También muestra aliados y rivales de tus últimas 3 partidas para calificarlos rápido.</p>
+            <div class="guide-card-title" data-i18n="ctRating">RATING</div>
+            <p data-i18n="ctRatingP">Califica a un jugador con estrellas (1–5) y escribe un comentario personal. También muestra aliados y rivales de tus últimas 3 partidas para calificarlos rápido.</p>
           </div>
         </div>
       </div>
 
       <div class="guide-section">
-        <div class="guide-section-title">Sistema de valoración vs elo</div>
+        <div class="guide-section-title" data-i18n="ratingSystem">Sistema de valoración vs elo</div>
         <p style="font-size:15px;color:var(--text2);margin-bottom:10px;line-height:1.7">La valoración va de <strong style="color:var(--red)">−1.00</strong> a <strong style="color:var(--green)">+1.00</strong> donde <strong>0.00 = promedio exacto del elo del jugador</strong>. Los umbrales se escalan automáticamente por rango (Iron → Challenger). Se evalúa cada partida con los umbrales de su rol y campeón real, luego se promedian — así un jugador multi-rol es evaluado de forma objetiva.</p>
         <table class="guide-score-table">
           <thead><tr><th>Valoración</th><th>Nivel</th><th>Qué significa</th></tr></thead>
@@ -4448,7 +4767,7 @@ async function addAllyFromMatch(gameName, tagLine, btn){
       </div>
 
       <div class="guide-section">
-        <div class="guide-section-title">Rol y tipo de campeón</div>
+        <div class="guide-section-title" data-i18n="roleType">Rol y tipo de campeón</div>
         <p style="font-size:15px;color:var(--text2);margin-bottom:8px;line-height:1.7">El rol se detecta automáticamente desde los datos de Riot (campo <code style="background:var(--bg3);padding:1px 5px;border-radius:2px;font-family:'Share Tech Mono',monospace">teamPosition</code>). El tipo de campeón se detecta desde una base de ~100 campeones conocidos.</p>
         <p style="font-size:15px;color:var(--text2);margin-bottom:8px;line-height:1.7">Si la detección es incorrecta, usa el botón <strong>✏ editar rol</strong> en la card para corregirlo manualmente. Esto afecta el score y los consejos generados.</p>
         <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;">
@@ -4467,13 +4786,13 @@ async function addAllyFromMatch(gameName, tagLine, btn){
       </div>
 
       <div class="guide-section">
-        <div class="guide-section-title">Consejos del Erudito</div>
+        <div class="guide-section-title" data-i18n="scholarTips">Consejos del Erudito</div>
         <p style="font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:6px">Los consejos se generan automáticamente comparando tus stats con umbrales según rol y tipo de campeón. Son independientes para cada cola (General / Solo / Flex).</p>
         <p style="font-size:15px;color:var(--text2);line-height:1.7">Los bordes de color indican: <span style="color:var(--green)">verde = fortaleza</span>, <span style="color:var(--red)">rojo = área crítica de mejora</span>, <span style="color:var(--text2)">gris = neutro</span>.</p>
       </div>
 
       <div class="guide-section">
-        <div class="guide-section-title">Tips de uso</div>
+        <div class="guide-section-title" data-i18n="usageTips">Tips de uso</div>
         <div class="guide-step">
           <div class="guide-num">💡</div>
           <div class="guide-text">La Development API Key expira cada 24h. Si ves error 401, renuévala en el portal de Riot.</div>
