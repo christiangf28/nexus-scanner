@@ -1207,17 +1207,6 @@ textarea:focus{border-color:var(--cyan);}
 
 <div class="main">
 
-  <div class="api-panel">
-    <div class="api-label">// Autenticación — Riot API</div>
-    <div class="api-row">
-      <input type="password" id="apiKey" placeholder="RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="flex:1;min-width:200px;box-sizing:border-box;">
-      <button type="button" onclick="const i=document.getElementById('apiKey');const show=i.type==='password';i.type=show?'text':'password';this.innerHTML=show?'🙈':'👁'" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:4px;cursor:pointer;font-size:15px;width:36px;height:36px;line-height:1;color:var(--text2);flex-shrink:0;display:flex;align-items:center;justify-content:center" title="Mostrar/ocultar key">👁</button>
-    </div>
-    <div class="api-note" id="apiNote">
-      Obtén tu key gratuita en <a href="https://developer.riotgames.com" target="_blank">developer.riotgames.com</a>
-      → iniciar sesión → Development API Key (válida 24h)
-    </div>
-  </div>
 
   <div class="search-bar">
     <select id="regionSelect" onchange="setRegion(this.value)" style="font-family:'Orbitron',monospace;font-size:13px;letter-spacing:.5px;padding:10px 12px;min-width:82px;background:rgba(17,24,39,.9);border:1px solid var(--border2);color:var(--cyan);border-radius:3px;cursor:pointer">
@@ -1279,20 +1268,6 @@ fetch('https://ddragon.leagueoflegends.com/api/versions.json')
   .then(r=>r.json()).then(v=>{DDV=v[0];}).catch(()=>{});
 window.addEventListener('DOMContentLoaded',()=>{
   setRegion(_regionKey);
-  if(PROXY_URL){
-    document.getElementById('apiNote').innerHTML='Opcional — la app ya incluye acceso a la API de Riot. Pega tu propia key de <a href="https://developer.riotgames.com" target="_blank">developer.riotgames.com</a> solo si prefieres usar tus límites personales.';
-    document.getElementById('apiKey').placeholder='API Key propia (opcional)';
-    document.getElementById('emptyText').innerHTML='Agrega jugadores por Riot ID<br>para comenzar el análisis';
-    document.getElementById('guideKeyStep1').innerHTML='<strong>API Key (opcional)</strong> — la app ya incluye acceso compartido a la API de Riot, no necesitas configurar nada. Si prefieres usar tus propios límites, obtén una key en <a href="https://developer.riotgames.com" target="_blank" style="color:var(--cyan)">developer.riotgames.com</a>.';
-    document.getElementById('guideKeyStep2').innerHTML='<strong>Si pegas tu propia key</strong> en el campo superior, se usa en lugar del acceso compartido y se guarda solo en tu navegador.';
-  }
-  const savedKey=localStorage.getItem('loltrack_key');
-  if(savedKey)document.getElementById('apiKey').value=savedKey;
-  document.getElementById('apiKey').addEventListener('input',e=>{
-    const v=e.target.value.trim();
-    if(v)localStorage.setItem('loltrack_key',v);
-    else localStorage.removeItem('loltrack_key');
-  });
   renderHistory();
   loadPlayers();
 });
@@ -1996,7 +1971,7 @@ function getRoleFreq(matches){
 }
 function avg(arr,key){if(!arr.length)return 0;return arr.reduce((s,m)=>s+(m[key]||0),0)/arr.length;}
 function avgPerMin(arr,key){if(!arr.length)return 0;return arr.reduce((s,m)=>s+(m[key]||0)/Math.max(1,m._mins||1),0)/arr.length;}
-function getKey(){return document.getElementById('apiKey').value.trim();}
+function getKey(){return '';}
 function getCount(){return 20;}
 function showErr(msg){
   const el=document.getElementById('errBox');
@@ -2576,21 +2551,6 @@ function buildCard(p,idx){
   const rankOrder=['IRON','BRONZE','SILVER','GOLD','PLATINUM','EMERALD','DIAMOND','MASTER','GRANDMASTER','CHALLENGER'];
   const divOrder=['IV','III','II','I'];
   function rankValue(tier,rank){return rankOrder.indexOf(tier)*4+(divOrder.indexOf(rank)||0);}
-  function trackPeak(puuid,q){
-    if(!q)return;
-    try{
-      const key='loltrack_peak_'+puuid;
-      const peak=JSON.parse(localStorage.getItem(key)||'null');
-      const cur=rankValue(q.tier,q.rank)*100+(q.leaguePoints||0);
-      const prev=peak?rankValue(peak.tier,peak.rank)*100+(peak.lp||0):0;
-      if(!peak||cur>prev)localStorage.setItem(key,JSON.stringify({tier:q.tier,rank:q.rank,lp:q.leaguePoints}));
-    }catch(e){}
-  }
-  function getPeak(puuid){
-    try{return JSON.parse(localStorage.getItem('loltrack_peak_'+puuid)||'null');}catch(e){return null;}
-  }
-  if(p.soloQ)trackPeak(p.puuid,p.soloQ);
-  const peak=getPeak(p.puuid);
   function rankRow(q, label){
     if(!q)return`<div class="rank-row" style="padding:10px 16px;">
       <div style="font-size:11px;color:var(--text3);font-family:'Orbitron',monospace;letter-spacing:1px;min-width:76px">${label}</div>
@@ -2604,14 +2564,12 @@ function buildCard(p,idx){
     const tierStr=noRank.includes(tier)?tierEs(tier):`${tierEs(tier)} ${q.rank}`;
     const w=q.wins||0,l=q.losses||0,tot=w+l;
     const wr=tot>0?Math.round(w/tot*100):0;
-    const isPeak=label==='SOLO/DUO'&&peak&&rankValue(peak.tier,peak.rank)>rankValue(q.tier,q.rank);
-    const peakStr=isPeak?`<span style="font-size:11px;color:var(--gold);font-family:'Share Tech Mono',monospace;margin-top:2px;display:inline-block" title="Pico histórico registrado">🏆 ${tierEs(peak.tier)} ${peak.rank||''}</span>`:'';
     return`<div class="rank-row" style="padding:10px 16px;">
       <div style="font-size:11px;color:var(--text3);font-family:'Orbitron',monospace;letter-spacing:1px;min-width:76px">${label}</div>
       <div style="flex:1;min-width:0;margin-right:10px">
         <div style="display:flex;align-items:center;gap:6px">
           <div class="rank-tier" style="color:${getTierCol(tier)}">${tierStr}</div>
-        </div>${peakStr}
+        </div>
         <div class="rank-lp">${q.leaguePoints} LP</div>
       </div>
       <div class="wr-section">
@@ -3393,7 +3351,7 @@ function buildCard(p,idx){
   const rightHtml=`
     <div class="tabs">${tabs}</div>
     <div id="tc-${idx}" style="min-height:220px">${content[p.activeTab]||statsContent}</div>
-    <div class="cfoot">// UPDATED ${p.updated.toLocaleTimeString('es-CL')}</div>`;
+    <div class="cfoot">// UPDATED ${p.updated?p.updated.toLocaleTimeString('es-CL'):'—'}</div>`;
   div.innerHTML=isSolo
     ?`<div class="card-left">${leftHtml}</div><div class="card-right">${rightHtml}</div>`
     :`${leftHtml}${rightHtml}`;
@@ -4432,18 +4390,10 @@ async function addAllyFromMatch(gameName, tagLine, btn){
         <div class="guide-section-title">Primeros pasos</div>
         <div class="guide-step">
           <div class="guide-num">1</div>
-          <div class="guide-text" id="guideKeyStep1"><strong>Obtén tu API Key</strong> en <a href="https://developer.riotgames.com" target="_blank" style="color:var(--cyan)">developer.riotgames.com</a> → iniciar sesión → <em>Development API Key</em>. Expira cada 24h — renuévala en el portal.</div>
-        </div>
-        <div class="guide-step">
-          <div class="guide-num">2</div>
-          <div class="guide-text" id="guideKeyStep2"><strong>Pégala</strong> en el campo API Key en la parte superior. Se guarda solo para esta sesión.</div>
-        </div>
-        <div class="guide-step">
-          <div class="guide-num">3</div>
           <div class="guide-text"><strong>Busca jugadores</strong> por Riot ID con el formato <code style="background:var(--bg3);padding:2px 6px;border-radius:3px;font-family:'Share Tech Mono',monospace">Nombre#TAG</code> — por ejemplo <code style="background:var(--bg3);padding:2px 6px;border-radius:3px;font-family:'Share Tech Mono',monospace">Faker#KR1</code>. Presiona Enter o el botón + AGREGAR.</div>
         </div>
         <div class="guide-step">
-          <div class="guide-num">4</div>
+          <div class="guide-num">2</div>
           <div class="guide-text"><strong>Pulsa el botón de búsqueda</strong>. Se cargan automáticamente las últimas 20 partidas ranqueadas y ARAM. Usa <strong>12 SEM</strong> o <strong>1 AÑO</strong> para ampliar el historial.</div>
         </div>
       </div>

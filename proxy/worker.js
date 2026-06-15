@@ -128,10 +128,13 @@ export default {
         ` | origin: ${origin}`
       );
 
-      if (riotRes.status === 429) {
-        await notifyDiscord(env.DISCORD_WEBHOOK, '⚠️ Rate limit (429)', detail, 0xf39c12);
-      } else if (riotRes.status >= 500) {
-        await notifyDiscord(env.DISCORD_WEBHOOK, `🔴 Error Riot ${riotRes.status}`, detail);
+      const isLocalDev = origin === 'null' || /localhost|127\.0\.0\.1/.test(origin);
+      if (!isLocalDev) {
+        if (riotRes.status === 429) {
+          await notifyDiscord(env.DISCORD_WEBHOOK, '⚠️ Rate limit (429)', detail, 0xf39c12);
+        } else if (riotRes.status >= 500) {
+          await notifyDiscord(env.DISCORD_WEBHOOK, `🔴 Error Riot ${riotRes.status}`, detail);
+        }
       }
     }
 
