@@ -2312,7 +2312,7 @@ function showErr(msg){
 // portal (developer.riotgames.com/app/841044). Se usa el 85% como margen; los
 // 429 igual se reintentan más abajo como respaldo.
 // Production key (cuando llegue): [{max:500,winMs:10000},{max:30000,winMs:600000}]
-const RATE_WINDOWS=[{max:20,winMs:1000},{max:100,winMs:120000}];
+const RATE_WINDOWS=[{max:500,winMs:10000},{max:30000,winMs:600000}];
 const _rMaxWin=Math.max(...RATE_WINDOWS.map(w=>w.winMs));
 let _rStamps=[],_rQueue=Promise.resolve();
 function _rFreeze(ms){_rQueue=_rQueue.then(()=>new Promise(r=>setTimeout(r,ms)));}
