@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Nexus Scanner</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#050810;color:#e8f0fe;font-family:'Exo 2',sans-serif;line-height:1.7;min-height:100vh;}
+header{background:rgba(8,13,26,.98);border-bottom:1px solid rgba(0,229,255,.12);padding:16px 32px;display:flex;align-items:center;gap:16px;}
+.logo{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;letter-spacing:3px;color:#00e5ff;text-decoration:none;}
+.logo span{color:#8899bb;font-size:13px;font-weight:400;letter-spacing:1px;margin-left:8px;font-family:'Share Tech Mono',monospace;}
+main{max-width:780px;margin:0 auto;padding:56px 32px;}
+h1{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:#00e5ff;letter-spacing:2px;margin-bottom:8px;}
+.updated{font-family:'Share Tech Mono',monospace;font-size:12px;color:#445577;letter-spacing:1px;margin-bottom:48px;}
+h2{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#00e5ff;letter-spacing:2px;text-transform:uppercase;margin:36px 0 12px;padding-bottom:6px;border-bottom:1px solid rgba(0,229,255,.12);}
+p{color:#8899bb;font-size:15px;margin-bottom:14px;}
+ul{color:#8899bb;font-size:15px;margin:0 0 14px 20px;}
+ul li{margin-bottom:6px;}
+a{color:#00e5ff;text-decoration:none;}
+a:hover{text-decoration:underline;}
+.note{background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.15);border-radius:6px;padding:14px 18px;margin:24px 0;font-family:'Share Tech Mono',monospace;font-size:12px;color:#8899bb;letter-spacing:.5px;}
+footer{text-align:center;padding:40px 32px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#445577;letter-spacing:1px;border-top:1px solid rgba(0,229,255,.08);margin-top:64px;}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="index.html">NEXUS SCANNER<span>// PRIVACY POLICY</span></a>
+</header>
+<main>
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated: June 2026</p>
+
+  <h2>Overview</h2>
+  <p>Nexus Scanner is a personal performance analysis tool for League of Legends. This policy explains what data we handle, how it is used, and your rights as a user.</p>
+
+  <div class="note">// Nexus Scanner does not collect, store, or sell any personal information. All processing happens in your browser.</div>
+
+  <h2>Data We Access</h2>
+  <p>To provide its features, Nexus Scanner accesses the following data through the official Riot Games API, using the Riot ID you enter:</p>
+  <ul>
+    <li>Summoner profile (level, profile icon)</li>
+    <li>Ranked league standings (Solo/Duo, Flex)</li>
+    <li>Match history (results, stats, participants)</li>
+    <li>Account information (game name, tag line)</li>
+  </ul>
+  <p>This data is fetched on demand — only when you search for a player — and is never sent to or stored on our servers.</p>
+
+  <h2>Local Storage</h2>
+  <p>Nexus Scanner stores data locally in your browser (localStorage) to improve performance:</p>
+  <ul>
+    <li>Player profiles and match data you have looked up (cached for 1 hour)</li>
+    <li>Your API key, if you provide one (stored only in your browser)</li>
+    <li>App preferences (theme, language, region)</li>
+    <li>Score history snapshots for progress tracking</li>
+  </ul>
+  <p>This data never leaves your device and can be cleared at any time by clearing your browser's local storage.</p>
+
+  <h2>API Proxy</h2>
+  <p>Requests to the Riot Games API are routed through a Cloudflare Worker proxy. This proxy forwards your requests to Riot and returns the response. It does not log, store, or share any player data or search history. Its sole purpose is to protect the API key from being exposed client-side.</p>
+
+  <h2>Third-Party Services</h2>
+  <ul>
+    <li><strong>Riot Games API</strong> — player and match data. Subject to <a href="https://www.riotgames.com/en/privacy-notice" target="_blank">Riot's Privacy Notice</a>.</li>
+    <li><strong>Cloudflare Workers</strong> — API proxy hosting. Subject to <a href="https://www.cloudflare.com/privacypolicy/" target="_blank">Cloudflare's Privacy Policy</a>.</li>
+    <li><strong>Google Fonts</strong> — typography. May log font requests per Google's standard policy.</li>
+  </ul>
+  <p>We do not use analytics, advertising, or tracking of any kind.</p>
+
+  <h2>Cookies</h2>
+  <p>Nexus Scanner does not use cookies.</p>
+
+  <h2>Children's Privacy</h2>
+  <p>Nexus Scanner is not directed at children under 13. We do not knowingly collect any information from minors.</p>
+
+  <h2>Changes to This Policy</h2>
+  <p>If this policy is updated, the "Last updated" date at the top of this page will reflect the change. Continued use of the app constitutes acceptance of the updated policy.</p>
+
+  <h2>Contact</h2>
+  <p>Questions about this policy? Reach out at <a href="mailto:christiangf28@gmail.com">christiangf28@gmail.com</a>.</p>
+</main>
+<footer>// NEXUS SCANNER — NOT AFFILIATED WITH RIOT GAMES &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a></footer>
+</body>
+</html>
